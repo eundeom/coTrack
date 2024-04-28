@@ -1,0 +1,16 @@
+* {
+  font-family: "HelveticaNeueLight";
+}
+/* log in compo */
+.auth-main-title {
+  margin: 90px;
+  font-family: HelveticaNeueLight;
+  font-size: 50px;
+  text-align: center;
+}
+.auth-subtitle {
+  /* color: #fb00a3; */
+  margin: 7px 0px 0px 0px;
+  text-decoration: underline;
+  color: darkgray;
+}

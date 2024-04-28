@@ -1,0 +1,21 @@
+* {
+  /* font-style: HelveticaNeueBlack; */
+}
+.playlist-category {
+  font-family: HelveticaNeueBold;
+  /* font-style: Urbanist; */
+  font-size: 40px;
+  margin-left: -30px;
+}
+.playlist-header {
+  margin: 15px 0 0 30px;
+}
+.playlist-mini-title {
+  font-family: HelveticaNeueBold;
+  font-size: 30px;
+}
+
+.playlist-container {
+  margin: auto;
+  width: 90%;
+}
