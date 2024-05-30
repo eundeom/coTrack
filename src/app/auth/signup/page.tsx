@@ -20,6 +20,9 @@ const SignUpPage = () => {
       email,
       password,
       options: {
+        data: {
+          originUrl: location.origin,
+        },
         emailRedirectTo: "http://localhost:3000/auth/userInfo",
       },
     });

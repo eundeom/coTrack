@@ -23,12 +23,9 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const [playlistName, setPlaylistName] = useState<string>();
   const [description, setDescription] = useState<string | null>();
   const { accessToken } = useTokenState();
-  // const [playlistCover, setplaylistCover] = useState<string>();
-  // const [playlists, setPlaylists] = useState<{ name: string; cover: string }[]>([]);
+  const [createdWith, setCreateWith] = useState<{ username: string | null | undefined }[]>([]);
 
   useEffect(() => {
-    console.log(playlistsId);
-
     const getSong = async () => {
       // get the song id [skdh, sidjhf, sdoi, ...]
 
@@ -56,7 +53,6 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       if (!playlistData) {
         console.error(playlistError);
       }
-      console.log(playlistData![0]);
       setPlaylistName(playlistData![0].playlist_name);
       setDescription(playlistData![0].description);
 
@@ -68,7 +64,41 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       // setplaylistCover(imageSrcs);
     };
     getPlaylistInfo();
+
+    const getCreatedWith = async () => {
+      const { data: createdWithData, error } = await supabase
+        .from("playlist_users")
+        .select("user_id")
+        .eq("playlist_id", playlistsId);
+
+      if (createdWithData && createdWithData.length > 0) {
+        console.log(createdWithData);
+        const createdWithMap = createdWithData.map(async (data) => ({
+          // id: data.user_id,
+          username: await userIdToName(data.user_id),
+        }));
+        console.log(createdWithMap);
+
+        setCreateWith(await Promise.all(createdWithMap));
+      }
+    };
+    getCreatedWith();
   }, [accessToken, playlistsId, supabase]);
+
+  const userIdToName = async (userId: string) => {
+    if (!userId) return null;
+
+    const { data: UsernameData, error } = await supabase
+      .from("users")
+      .select("username")
+      .eq("id", userId);
+
+    if (UsernameData) {
+      return UsernameData[0]?.username;
+    } else {
+      return;
+    }
+  };
 
   return (
     <>
@@ -110,6 +140,19 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
           </Button>
         </Flex>
         <h2 style={{ marginLeft: 50, color: "lightgray" }}>{description}</h2>
+        {/* created with */}
+        <div style={{ marginLeft: 50 }}>
+          <span>
+            created by :<span>&nbsp;</span>
+            {createdWith.map((created, index) => (
+              <>
+                <div key={index} style={{ display: "inline-block" }}>
+                  <span> {created.username}</span>
+                </div>
+              </>
+            ))}
+          </span>
+        </div>
 
         <PlaylistItemsComponent tracks={tracks} />
       </Container>

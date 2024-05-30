@@ -78,7 +78,6 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
 
     try {
       const imageSrc = await getVisionZFile("http://localhost:3000/api/upload", playlistCover);
-      console.log(imageSrc);
       return imageSrc;
     } catch (error) {
       console.error("Error fetching image:", error);
@@ -116,7 +115,7 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
                       Welcome <span style={{ color: "#fb00a3" }}>{username}</span>!
                     </p>
                     <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
-                    <Link href="/mypage">
+                    <Link href={`/mypage/${userId}`}>
                       <p>My Page</p>
                     </Link>
                     <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
