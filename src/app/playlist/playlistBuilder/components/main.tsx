@@ -57,7 +57,15 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
     if (!playlistId) {
       console.error(PlaylistError);
     }
+
     console.log(playlistId);
+
+    // INSERT playlist_users
+    const { data: userInsertData, error: userInsertError } = await supabase
+      .from("playlist_users")
+      .insert({ user_id: userId as string, playlist_id: playlistId![0].id });
+
+    console.log(userInsertData);
 
     const songsToInsert = playlist.map((track) => ({
       user_id: userId,
@@ -100,7 +108,8 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
     // allowing you to choose track / album, etc....
     const query = searchRef.current!.value.trim();
 
-    const fetchedTracks = await searchTracks(query, access_token);
+    // changed using provider.
+    const fetchedTracks = await searchTracks(query, accessToken as string);
     console.log(fetchedTracks);
 
     setTracks(fetchedTracks);

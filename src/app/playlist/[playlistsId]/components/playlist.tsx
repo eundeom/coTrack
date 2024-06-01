@@ -64,15 +64,24 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       // setplaylistCover(imageSrcs);
     };
     getPlaylistInfo();
+    console.log(createdWith);
 
     const getCreatedWith = async () => {
+      // playlist_users 테이블의 user name을 가져오기
       const { data: createdWithData, error } = await supabase
         .from("playlist_users")
-        .select("user_id")
+        .select(
+          `
+    user_id,
+    users (
+      username
+    )
+  `,
+        )
         .eq("playlist_id", playlistsId);
 
+      console.log("cdata", createdWithData);
       if (createdWithData && createdWithData.length > 0) {
-        console.log(createdWithData);
         const createdWithMap = createdWithData.map(async (data) => ({
           // id: data.user_id,
           username: await userIdToName(data.user_id),
@@ -145,11 +154,9 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
           <span>
             created by :<span>&nbsp;</span>
             {createdWith.map((created, index) => (
-              <>
-                <div key={index} style={{ display: "inline-block" }}>
-                  <span> {created.username}</span>
-                </div>
-              </>
+              <div key={index} style={{ display: "inline-block" }}>
+                <span> {created.username}</span>
+              </div>
             ))}
           </span>
         </div>

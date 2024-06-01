@@ -1,13 +1,15 @@
 "use client";
 import Link from "next/link";
-import { Image, Flex, Button, Center } from "@mantine/core";
+import { Image, Flex, Button, Center, TextInput, Autocomplete } from "@mantine/core";
 import "../../../../app/globals.css";
 import { createClient } from "@/utils/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../playlist.css";
 import { getVisionZFile } from "@visionz/upload-helper-react";
 import { useUserState } from "@/app/context/user.provider";
+import searchTracks from "../../playlistBuilder/components/searchTracks";
+import { useTokenState } from "@/app/context/token.provider";
 
 /**
  * playlist slide ..
@@ -18,13 +20,35 @@ type PlaylistProps = {
   username: string | null;
 };
 
+type Track = {
+  id: string;
+  name: string;
+  album: string;
+  artist: string;
+  albumCover: string;
+  duration: string;
+};
+
+type playlistData = {
+  created_at: string;
+  created_by: string;
+  description: string | null;
+  id: string;
+  playlist_name: string;
+  playlistcover: string | null;
+};
+
 const PlaylistComponent = ({ username }: PlaylistProps) => {
   const router = useRouter();
   const supabase = createClient();
   const [playlists, setPlaylists] = useState<{ name: string; cover: string | null; id: string }[]>(
     [],
   );
+  const searchRef = useRef<HTMLInputElement>(null);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [allPlaylists, setAllplaylists] = useState<playlistData[] | null>([]);
   const { userId } = useUserState();
+  const { accessToken } = useTokenState();
 
   useEffect(() => {
     if (!username) {
@@ -71,7 +95,19 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
       }
     };
     fetchPlaylists();
+
+    // get all playlist for autocomplete
+    const getAllPlaylist = async () => {
+      const { data: playlistData, error: Perror } = await supabase.from("playlists").select("*");
+      setAllplaylists(playlistData);
+    };
+    getAllPlaylist();
   }, [router, supabase, userId, username]);
+
+  // autocomplete array
+  const playlistNames = Array.from(
+    new Set(allPlaylists!.map((playlist) => playlist.playlist_name)),
+  );
 
   const convertToSrc = async (playlistCover: string | null) => {
     if (!playlistCover) return null;
@@ -104,49 +140,69 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
   return (
     <>
       {/* My playlists */}
+
       <div className="container">
         <div className="playlist-container">
-          <div className="playlist-header">
-            <div className="user-info">
-              <Flex>
-                {username ? (
-                  <>
-                    <p>
-                      Welcome <span style={{ color: "#fb00a3" }}>{username}</span>!
-                    </p>
-                    <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
-                    <Link href={`/mypage/${userId}`}>
-                      <p>My Page</p>
-                    </Link>
-                    <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+          <Flex justify="space-between" align="center" mb={60} direction="row" mt={20}>
+            <div className="playlist-header">
+              <div className="user-info">
+                <Flex>
+                  {username ? (
+                    <>
+                      <p>
+                        Welcome <span style={{ color: "#fb00a3" }}>{username}</span>!
+                      </p>
+                      <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+                      <Link href={`/mypage/${userId}`}>
+                        <p>My Page</p>
+                      </Link>
+                      <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
 
-                    <a href="#" onClick={logOutHandler}>
-                      Log out
-                    </a>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/auth/signup">
-                      <p>Sign up</p>
-                    </Link>
-                    <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
-                    <Link href="/auth/login">
-                      <p>Log in</p>
-                    </Link>
-                    <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
-                    <Link href="/mypage">
-                      <p>My Page</p>
-                    </Link>
-                  </>
-                )}
-              </Flex>
+                      <a href="#" onClick={logOutHandler}>
+                        Log out
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/auth/signup">
+                        <p>Sign up</p>
+                      </Link>
+                      <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+                      <Link href="/auth/login">
+                        <p>Log in</p>
+                      </Link>
+                      <p>&nbsp;&nbsp;|&nbsp;&nbsp;</p>
+                      <Link href="/mypage">
+                        <p>My Page</p>
+                      </Link>
+                    </>
+                  )}
+                </Flex>
+              </div>
             </div>
 
             <h1 className="auth-main-title">
               c<span style={{ fontSize: 25, color: "#fb00a3" }}>✳︎</span>
               Track{" "}
             </h1>
-          </div>
+
+            {/* search playlist */}
+            <Flex>
+              <Autocomplete
+                data={playlistNames}
+                placeholder="Search playlist"
+                radius="xl"
+                size="md"
+                mt={20}
+                w={300}
+                ref={searchRef}
+              />
+
+              <Button variant="filled" color="#FB00A3" size="md" radius="xl" mt={20} ml={5}>
+                Search
+              </Button>
+            </Flex>
+          </Flex>
 
           <Flex direction="column" m={80} w={1400}>
             <h1 className="playlist-category">My Playlists</h1>
