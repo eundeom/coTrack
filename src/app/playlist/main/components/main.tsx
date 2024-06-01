@@ -196,8 +196,7 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
                 mt={20}
                 w={300}
                 ref={searchRef}
-                // limit={3}
-
+                limit={10}
                 maxDropdownHeight={120}
               />
 
