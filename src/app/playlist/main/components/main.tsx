@@ -38,6 +38,12 @@ type playlistData = {
   playlistcover: string | null;
 };
 
+type playlistsData = {
+  name: string;
+  cover: string | null;
+  id: string;
+};
+
 const PlaylistComponent = ({ username }: PlaylistProps) => {
   const router = useRouter();
   const supabase = createClient();
@@ -58,10 +64,23 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
     // get playlist cover image (including user id) from supabase
     const fetchPlaylists = async () => {
       try {
+        // const { data: Cdata, error } = await supabase
+        //   .from("playlists")
+        //   .select("playlist_name, playlistcover, id")
+        //   .eq("created_by", userId as string);
         const { data: Cdata, error } = await supabase
-          .from("playlists")
-          .select("playlist_name, playlistcover, id")
-          .eq("created_by", userId as string);
+          .from("playlist_users")
+          .select(
+            `
+    playlist_id,
+    playlists (
+      id,
+      playlist_name,
+      playlistcover
+    )
+  `,
+          )
+          .eq("user_id", userId as string);
 
         if (error) {
           throw error;
@@ -69,11 +88,11 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
 
         // save the imported image URL as a map in an array.
         if (Cdata && Cdata.length > 0) {
-          const playlistsData = Cdata.map(async (playlist) => ({
-            name: playlist.playlist_name,
+          const playlistsData: Promise<playlistsData>[] = Cdata.map(async (playlist) => ({
+            name: playlist.playlists.playlist_name,
             // cover: playlist.playlistcover,
-            cover: await convertToSrc(playlist.playlistcover),
-            id: playlist.id,
+            cover: await convertToSrc(playlist.playlists.playlistcover),
+            id: playlist.playlist_id,
           }));
 
           // Promise.allSettled(playlistsData)

@@ -30,7 +30,6 @@ export const UserProvider = ({ children }: { children: any }) => {
         });
         if (response.ok) {
           const data = await response.json();
-          console.log("data!!!", data);
           setUserId(data);
           setUser(true);
         } else {
@@ -45,7 +44,7 @@ export const UserProvider = ({ children }: { children: any }) => {
       }
     };
     checkCredential();
-  }, [user]);
+  }, []);
 
   return (
     <UserStateContext.Provider value={{ user, userId, setUser, setUserId }}>

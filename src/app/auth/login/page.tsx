@@ -26,9 +26,7 @@ const LoginPage = () => {
         password,
       });
       if (data.user) {
-        console.log("log in 성공 : ", data.user);
         setUser(true);
-        // setAccessToken()
 
         fetch("/api/spotify", { method: "POST" })
           .then((res) => res.json())

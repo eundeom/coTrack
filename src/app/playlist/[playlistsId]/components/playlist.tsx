@@ -1,5 +1,5 @@
 "use client";
-import { Flex, Button, Container, Modal } from "@mantine/core";
+import { Flex, Button, Container, Modal, Chip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { SetStateAction, useEffect, useState } from "react";
@@ -35,10 +35,10 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   >([]);
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedUsername, setSelectedUsername] = useState<string | null>("");
-  const [follow, setFollow] = useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [followers, setFollowers] = useState<number>();
   const [following, setFollowing] = useState<number>();
+  const [followChecked, setFollowChecked] = useState(false); // chip
 
   useEffect(() => {
     const getSong = async () => {
@@ -94,14 +94,11 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
         )
         .eq("playlist_id", playlistsId);
 
-      // console.log("cdata", createdWithData);
-
       if (createdWithData && createdWithData.length > 0) {
         const createdWithMap = createdWithData.map(async (data) => ({
           id: data.user_id,
           username: await userIdToName(data.user_id),
         }));
-        console.log(createdWithMap);
 
         setCreatedWith(await Promise.all(createdWithMap));
       }
@@ -133,8 +130,6 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       .select("*")
       .eq("follow", userId);
 
-    console.log("followerData", followerData);
-
     setFollowers(followerData?.length);
   };
 
@@ -155,26 +150,52 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
         createdWith.find((user) => user.username === selectedUsername)?.id || "";
 
       setSelectedUserId(selectedUser);
-
-      if (selectedUserId) {
-        getFollower(selectedUserId);
-        getFollowing(selectedUserId);
-      }
     }
 
     // 내가 이 사람을 팔로우하고 있는지 확인 setFollow update
   }, [opened, createdWith, selectedUsername]);
 
+  useEffect(() => {
+    // check follow state
+    const getFollowState = async () => {
+      const { data: followState, error: followError } = await supabase
+        .from("followers")
+        .select("*")
+        .eq("user_id", userId as string)
+        .eq("follow", selectedUserId as string);
+
+      if (followState) {
+        setFollowChecked(true);
+      } else {
+        return;
+      }
+    };
+    getFollowState();
+
+    getFollower(selectedUserId);
+    getFollowing(selectedUserId);
+  }, [selectedUserId]);
+  // if selectedUserId is exist
+
   const userModal = () => {
     const followUpdate = async () => {
-      if (follow === true) {
+      if (followChecked) {
         // 팔로우 상태인데 누른거임 --> 팔로우 취소하기 (DB에서 삭제)
-        const response = await supabase.from("followers").delete().eq("id", selectedUserId);
+        const response = await supabase
+          .from("followers")
+          .delete()
+          .eq("user_id", userId as string)
+          .eq("follow", selectedUserId);
+
+        // follower update
+        getFollower(selectedUserId);
       } else {
         // 팔로우 안된 상태에서 누른거임 --> 팔로우 하기 (DB insert)
         const { data: followData, error: followError } = await supabase
           .from("followers")
           .insert({ user_id: userId as string, follow: selectedUserId });
+
+        getFollower(selectedUserId);
       }
     };
     return (
@@ -184,23 +205,22 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
           {/* user id : createdWith.find((user) => user.username === selectedUsername)?.id */}
           <Flex justify="space-between" align="center">
             <div>
-              <span>follower : </span>
-              {followers}
-              <span>&nbsp;</span>
               <span>following : </span>
               {following}
+              <span>&nbsp;</span>
+              <span>follower : </span>
+              {followers}
             </div>
 
             {userId !== selectedUserId && (
-              <Button
-                variant="filled"
-                color="#FB00A3"
-                size="xs"
-                radius="xl"
-                // onClick={followUpdate}
+              <Chip
+                checked={followChecked}
+                onChange={() => setFollowChecked((v) => !v)}
+                color="#fb00a3"
+                onClick={followUpdate}
               >
-                {follow ? "Following" : "Follow"}
-              </Button>
+                Follow
+              </Chip>
             )}
           </Flex>
         </Modal>
@@ -265,7 +285,11 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
                   open();
                 }}
               >
-                <p> {created.username}</p>
+                <p>
+                  {" "}
+                  {created.username}
+                  <span>&nbsp;</span>
+                </p>
               </div>
             ))}
           </span>
