@@ -58,8 +58,6 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
       console.error(PlaylistError);
     }
 
-    console.log(playlistId);
-
     // INSERT playlist_users
     const { data: userInsertData, error: userInsertError } = await supabase
       .from("playlist_users")

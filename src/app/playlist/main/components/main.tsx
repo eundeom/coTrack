@@ -196,6 +196,9 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
                 mt={20}
                 w={300}
                 ref={searchRef}
+                // limit={3}
+
+                maxDropdownHeight={120}
               />
 
               <Button variant="filled" color="#FB00A3" size="md" radius="xl" mt={20} ml={5}>

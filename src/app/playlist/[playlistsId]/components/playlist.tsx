@@ -67,7 +67,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
     console.log(createdWith);
 
     const getCreatedWith = async () => {
-      // playlist_users 테이블의 user name을 가져오기
+      // get username from playlist_users
       const { data: createdWithData, error } = await supabase
         .from("playlist_users")
         .select(
@@ -80,10 +80,10 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
         )
         .eq("playlist_id", playlistsId);
 
-      console.log("cdata", createdWithData);
+      // console.log("cdata", createdWithData);
+
       if (createdWithData && createdWithData.length > 0) {
         const createdWithMap = createdWithData.map(async (data) => ({
-          // id: data.user_id,
           username: await userIdToName(data.user_id),
         }));
         console.log(createdWithMap);
