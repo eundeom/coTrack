@@ -27,9 +27,14 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const [description, setDescription] = useState<string | null>();
   const { accessToken } = useTokenState();
   const { userId } = useUserState();
-  const [createdWith, setCreateWith] = useState<{ username: string | null | undefined }[]>([]);
+  const [createdWith, setCreatedWith] = useState<
+    {
+      id: string;
+      username: string | null | undefined;
+    }[]
+  >([]);
   const [opened, { open, close }] = useDisclosure(false);
-  const [selectedUsername, setSelectedUsername] = useState<string>("");
+  const [selectedUsername, setSelectedUsername] = useState<string | null>("");
   const [follow, setFollow] = useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [followers, setFollowers] = useState<number>();
@@ -74,7 +79,6 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       // setplaylistCover(imageSrcs);
     };
     getPlaylistInfo();
-    console.log(createdWith);
 
     const getCreatedWith = async () => {
       // get username from playlist_users
@@ -99,7 +103,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
         }));
         console.log(createdWithMap);
 
-        setCreateWith(await Promise.all(createdWithMap));
+        setCreatedWith(await Promise.all(createdWithMap));
       }
     };
     getCreatedWith();
@@ -147,8 +151,11 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
 
   useEffect(() => {
     if (opened) {
-      // const selectedUserId = createdWith.find((user) => user.username === selectedUsername)?.id;
-      setSelectedUserId(createdWith.find((user) => user.username === selectedUsername)?.id);
+      const selectedUser: string =
+        createdWith.find((user) => user.username === selectedUsername)?.id || "";
+
+      setSelectedUserId(selectedUser);
+
       if (selectedUserId) {
         getFollower(selectedUserId);
         getFollowing(selectedUserId);
@@ -173,6 +180,8 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
     return (
       <>
         <Modal opened={opened} onClose={close} title={`${selectedUsername}`} centered>
+          {/* username / follower, following / follow button → 클릭하면 바로 DB 반영 / playlist → 클릭하면 플레이리스트로 이동 */}
+          {/* user id : createdWith.find((user) => user.username === selectedUsername)?.id */}
           <Flex justify="space-between" align="center">
             <div>
               <span>follower : </span>
