@@ -1,6 +1,15 @@
 "use client";
 import Link from "next/link";
-import { Image, Flex, Button, Center, TextInput, Autocomplete } from "@mantine/core";
+import {
+  Image,
+  Flex,
+  Button,
+  Center,
+  TextInput,
+  Autocomplete,
+  Select,
+  ComboboxItem,
+} from "@mantine/core";
 import "../../../../app/globals.css";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useRef, useState } from "react";
@@ -64,10 +73,6 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
     // get playlist cover image (including user id) from supabase
     const fetchPlaylists = async () => {
       try {
-        // const { data: Cdata, error } = await supabase
-        //   .from("playlists")
-        //   .select("playlist_name, playlistcover, id")
-        //   .eq("created_by", userId as string);
         const { data: Cdata, error } = await supabase
           .from("playlist_users")
           .select(
@@ -125,7 +130,12 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
 
   // autocomplete array
   const playlistNames = Array.from(
-    new Set(allPlaylists!.map((playlist) => playlist.playlist_name)),
+    new Set(
+      allPlaylists!.map((playlist) => ({
+        value: playlist.id,
+        label: playlist.playlist_name,
+      })),
+    ),
   );
 
   const convertToSrc = async (playlistCover: string | null) => {
@@ -207,21 +217,28 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
 
             {/* search playlist */}
             <Flex>
-              <Autocomplete
-                data={playlistNames}
+              <Select
                 placeholder="Search playlist"
+                data={playlistNames}
+                onChange={(_value, option) => {
+                  if (option) {
+                    router.push(`/playlist/${_value}`);
+                  }
+                }}
                 radius="xl"
                 size="md"
                 mt={20}
                 w={300}
-                ref={searchRef}
                 limit={10}
                 maxDropdownHeight={120}
+                nothingFoundMessage="Nothing found..."
+                searchable
+                clearable
               />
 
-              <Button variant="filled" color="#FB00A3" size="md" radius="xl" mt={20} ml={5}>
+              {/* <Button variant="filled" color="#FB00A3" size="md" radius="xl" mt={20} ml={5}>
                 Search
-              </Button>
+              </Button> */}
             </Flex>
           </Flex>
 

@@ -13,7 +13,6 @@ const getTrack = async (songIds: string, accessToken: string | null) => {
   }
 
   const data = await res.json();
-  console.log(data);
 
   const playlist_list = data.tracks.map((item: any) => ({
     id: item.id,
@@ -23,8 +22,6 @@ const getTrack = async (songIds: string, accessToken: string | null) => {
     albumCover: item.album.images[0].url,
     duration: new Date(item.duration_ms).toISOString().substr(14, 5),
   }));
-
-  console.log("l", playlist_list);
 
   return playlist_list;
 };
