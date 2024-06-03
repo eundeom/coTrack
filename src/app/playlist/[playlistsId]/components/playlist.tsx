@@ -260,7 +260,6 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
                 alt={`Playlist ${index + 1}`}
                 w={100}
                 h={100}
-                // onClick={() => moveToPlaylist(playlist.id)}
               />
 
               <div>

@@ -1,4 +1,5 @@
-import { Flex, Image, Text, CloseButton } from "@mantine/core";
+import { Flex, Grid, GridCol, Image, Text } from "@mantine/core";
+import "../playlistsId.css";
 
 interface Track {
   id: string;
@@ -20,16 +21,49 @@ const PlaylistItemsComponent: React.FC<PlaylistItemsComponentProps> = ({ tracks 
         <div key={track.id}>
           <hr style={{ border: "solid 0.1px #dddddd", margin: 20 }} />
           <div className="add-music-item">
-            <Flex direction="row">
-              <Image radius="lg" src={track.albumCover} alt={`Playlist`} w={80} h={80} ml={60} />
-              <Flex className="add-music-title" align="center" ml={70}>
+            {/* <Flex direction="row">
+              <Image
+                radius="lg"
+                src={track.albumCover}
+                alt={`Playlist`}
+                w={80}
+                h={80}
+                // ml={60}
+              />
+              <Flex
+                className="add-music-title"
+                align="center"
+                // ml={70}
+              >
                 <Text>{track.name}</Text>
-                <Text ml={200}>{track.artist}</Text>
-                <Text ml={280} mr={20}>
+                <Text
+                // ml={200}
+                >
+                  {track.artist}
+                </Text>
+                <Text
+                // ml={280} mr={20}
+                >
                   {track.duration}
                 </Text>
               </Flex>
-            </Flex>
+            </Flex> */}
+
+            <Grid className="add-music-title" align="center" ml={50}>
+              <Grid.Col span={1.5}>
+                <Image
+                  radius="lg"
+                  src={track.albumCover}
+                  alt={`Playlist`}
+                  w={80}
+                  h={80}
+                  // ml={60}
+                />
+              </Grid.Col>
+              <Grid.Col span={3}>{track.name}</Grid.Col>
+              <Grid.Col span={3}>{track.artist}</Grid.Col>
+              <Grid.Col span={3}>{track.duration}</Grid.Col>
+            </Grid>
           </div>
         </div>
       ))}

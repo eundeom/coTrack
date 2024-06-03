@@ -60,56 +60,6 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
       router.push("/auth/login");
     }
 
-    // get playlist cover image (including user id) from supabase
-    //   const fetchPlaylists = async () => {
-    //     try {
-    //       const { data: Cdata, error } = await supabase
-    //         .from("playlist_users")
-    //         .select(
-    //           `
-    //   playlist_id,
-    //   playlists (
-    //     id,
-    //     playlist_name,
-    //     playlistcover
-    //   )
-    // `,
-    //         )
-    //         .eq("user_id", userId as string);
-
-    //       if (error) {
-    //         throw error;
-    //       }
-
-    //       // save the imported image URL as a map in an array.
-    //       if (Cdata && Cdata.length > 0) {
-    //         const playlistsData: Promise<playlistsData>[] = Cdata.map(async (playlist) => ({
-    //           name: playlist.playlists.playlist_name,
-    //           // cover: playlist.playlistcover,
-    //           cover: await convertToSrc(playlist.playlists.playlistcover),
-    //           id: playlist.playlist_id,
-    //         }));
-
-    //         // Promise.allSettled(playlistsData)
-    //         // .then(arr => {
-    //         //   if(arr[0].status === "fulfilled"){
-    //         //     arr[0].value
-    //         //   }
-    //         //   if (arr[0].status === "rejected") {
-    //         //     arr[0].reason
-    //         //   }
-
-    //         //   arr[0].data
-    //         // })
-
-    //         setPlaylists(await Promise.all(playlistsData));
-    //       }
-    //     } catch (error) {
-    //       console.log("log in failed");
-    //     }
-    //   };
-    //   fetchPlaylists();
-
     const getPlaylist = async () => {
       const fetchedPlaylist = await fetchPlaylist(userId as string);
       setPlaylists(fetchedPlaylist);
