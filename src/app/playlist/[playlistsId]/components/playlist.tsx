@@ -1,5 +1,5 @@
 "use client";
-import { Flex, Button, Container, Modal, Chip } from "@mantine/core";
+import { Flex, Button, Container, Modal, Chip, Image } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { SetStateAction, useEffect, useState } from "react";
@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import PlaylistItemsComponent from "./Items";
 import { useTokenState } from "@/app/context/token.provider";
 import { useUserState } from "@/app/context/user.provider";
+import fetchPlaylist from "@/utils/coTrack/fetchPlaylist";
 // import UserModal from "./userModal";
 
 type Track = {
@@ -17,6 +18,12 @@ type Track = {
   artist: string;
   albumCover: string;
   duration: string;
+};
+
+type playlistsData = {
+  name: string;
+  cover: string | null;
+  id: string;
 };
 
 const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
@@ -39,6 +46,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const [followers, setFollowers] = useState<number>();
   const [following, setFollowing] = useState<number>();
   const [followChecked, setFollowChecked] = useState(false); // chip
+  const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
 
   useEffect(() => {
     const getSong = async () => {
@@ -174,6 +182,13 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
 
     getFollower(selectedUserId);
     getFollowing(selectedUserId);
+
+    //  get playlist using selectedUserId
+    const getPlaylist = async () => {
+      const fetchedPlaylist = await fetchPlaylist(selectedUserId as string);
+      setPlaylists(fetchedPlaylist);
+    };
+    getPlaylist();
   }, [selectedUserId]);
   // if selectedUserId is exist
 
@@ -198,9 +213,14 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
         getFollower(selectedUserId);
       }
     };
+
+    const moveToPlaylist = async (playlistId: string) => {
+      router.push(`/playlist/${playlistId}`);
+    };
+
     return (
       <>
-        <Modal opened={opened} onClose={close} title={`${selectedUsername}`} centered>
+        <Modal opened={opened} onClose={close} title=<b>{`${selectedUsername}`}</b> centered>
           {/* username / follower, following / follow button → 클릭하면 바로 DB 반영 / playlist → 클릭하면 플레이리스트로 이동 */}
           {/* user id : createdWith.find((user) => user.username === selectedUsername)?.id */}
           <Flex justify="space-between" align="center">
@@ -223,6 +243,31 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
               </Chip>
             )}
           </Flex>
+
+          {/* display mini playlist */}
+          <br />
+          <p>- {selectedUsername} collection -</p>
+
+          {playlists?.map((playlist, index) => (
+            <div
+              key={index}
+              style={{ display: "inline-block", margin: 10 }}
+              onClick={() => moveToPlaylist(playlist.id)}
+            >
+              <Image
+                radius="lg"
+                src={playlist.cover}
+                alt={`Playlist ${index + 1}`}
+                w={100}
+                h={100}
+                // onClick={() => moveToPlaylist(playlist.id)}
+              />
+
+              <div>
+                <p>{playlist.name}</p>
+              </div>
+            </div>
+          ))}
         </Modal>
       </>
     );

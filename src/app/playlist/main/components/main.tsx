@@ -1,15 +1,6 @@
 "use client";
 import Link from "next/link";
-import {
-  Image,
-  Flex,
-  Button,
-  Center,
-  TextInput,
-  Autocomplete,
-  Select,
-  ComboboxItem,
-} from "@mantine/core";
+import { Image, Flex, Button, Select } from "@mantine/core";
 import "../../../../app/globals.css";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useRef, useState } from "react";
@@ -19,6 +10,7 @@ import { getVisionZFile } from "@visionz/upload-helper-react";
 import { useUserState } from "@/app/context/user.provider";
 import searchTracks from "../../playlistBuilder/components/searchTracks";
 import { useTokenState } from "@/app/context/token.provider";
+import fetchPlaylist from "@/utils/coTrack/fetchPlaylist";
 
 /**
  * playlist slide ..
@@ -56,9 +48,7 @@ type playlistsData = {
 const PlaylistComponent = ({ username }: PlaylistProps) => {
   const router = useRouter();
   const supabase = createClient();
-  const [playlists, setPlaylists] = useState<{ name: string; cover: string | null; id: string }[]>(
-    [],
-  );
+  const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
   const searchRef = useRef<HTMLInputElement>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [allPlaylists, setAllplaylists] = useState<playlistData[] | null>([]);
@@ -71,54 +61,60 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
     }
 
     // get playlist cover image (including user id) from supabase
-    const fetchPlaylists = async () => {
-      try {
-        const { data: Cdata, error } = await supabase
-          .from("playlist_users")
-          .select(
-            `
-    playlist_id,
-    playlists (
-      id,
-      playlist_name,
-      playlistcover
-    )
-  `,
-          )
-          .eq("user_id", userId as string);
+    //   const fetchPlaylists = async () => {
+    //     try {
+    //       const { data: Cdata, error } = await supabase
+    //         .from("playlist_users")
+    //         .select(
+    //           `
+    //   playlist_id,
+    //   playlists (
+    //     id,
+    //     playlist_name,
+    //     playlistcover
+    //   )
+    // `,
+    //         )
+    //         .eq("user_id", userId as string);
 
-        if (error) {
-          throw error;
-        }
+    //       if (error) {
+    //         throw error;
+    //       }
 
-        // save the imported image URL as a map in an array.
-        if (Cdata && Cdata.length > 0) {
-          const playlistsData: Promise<playlistsData>[] = Cdata.map(async (playlist) => ({
-            name: playlist.playlists.playlist_name,
-            // cover: playlist.playlistcover,
-            cover: await convertToSrc(playlist.playlists.playlistcover),
-            id: playlist.playlist_id,
-          }));
+    //       // save the imported image URL as a map in an array.
+    //       if (Cdata && Cdata.length > 0) {
+    //         const playlistsData: Promise<playlistsData>[] = Cdata.map(async (playlist) => ({
+    //           name: playlist.playlists.playlist_name,
+    //           // cover: playlist.playlistcover,
+    //           cover: await convertToSrc(playlist.playlists.playlistcover),
+    //           id: playlist.playlist_id,
+    //         }));
 
-          // Promise.allSettled(playlistsData)
-          // .then(arr => {
-          //   if(arr[0].status === "fulfilled"){
-          //     arr[0].value
-          //   }
-          //   if (arr[0].status === "rejected") {
-          //     arr[0].reason
-          //   }
+    //         // Promise.allSettled(playlistsData)
+    //         // .then(arr => {
+    //         //   if(arr[0].status === "fulfilled"){
+    //         //     arr[0].value
+    //         //   }
+    //         //   if (arr[0].status === "rejected") {
+    //         //     arr[0].reason
+    //         //   }
 
-          //   arr[0].data
-          // })
+    //         //   arr[0].data
+    //         // })
 
-          setPlaylists(await Promise.all(playlistsData));
-        }
-      } catch (error) {
-        console.log("log in failed");
-      }
+    //         setPlaylists(await Promise.all(playlistsData));
+    //       }
+    //     } catch (error) {
+    //       console.log("log in failed");
+    //     }
+    //   };
+    //   fetchPlaylists();
+
+    const getPlaylist = async () => {
+      const fetchedPlaylist = await fetchPlaylist(userId as string);
+      setPlaylists(fetchedPlaylist);
     };
-    fetchPlaylists();
+    getPlaylist();
 
     // get all playlist for autocomplete
     const getAllPlaylist = async () => {
@@ -137,18 +133,6 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
       })),
     ),
   );
-
-  const convertToSrc = async (playlistCover: string | null) => {
-    if (!playlistCover) return null;
-
-    try {
-      const imageSrc = await getVisionZFile("http://localhost:3000/api/upload", playlistCover);
-      return imageSrc;
-    } catch (error) {
-      console.error("Error fetching image:", error);
-      return null;
-    }
-  };
 
   const logOutHandler = async () => {
     const { error } = await supabase.auth.signOut();
@@ -299,7 +283,7 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
                 <></>
               )}
 
-              {playlists.map((playlist, index) => (
+              {playlists?.map((playlist, index) => (
                 <div key={index} className="playlist-item">
                   {playlist.cover === null ? (
                     <div style={{ width: 300, height: 300 }}>
@@ -359,7 +343,7 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
               gap={{ base: "sm", sm: "lg" }}
               justify={{ sm: "left" }}
             >
-              {playlists.map((playlist, index) => (
+              {playlists?.map((playlist, index) => (
                 <div key={index} className="playlist-item">
                   <Image
                     radius="lg"
