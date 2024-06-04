@@ -1,18 +1,14 @@
 "use client";
 import { Button, TextInput } from "@mantine/core";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/Admin";
 import { useRef } from "react";
 
 // username 받아서 DB INSERT
 
-const AuthConfirmComponent = ({
-  searchParams,
-}: {
-  searchParams: { confirmUrl: string };
-}) => {
+const AuthConfirmComponent = ({ searchParams }: { searchParams: { confirmUrl: string } }) => {
   const usernameRef = useRef<HTMLInputElement>(null);
 
-  const supabase = createClient();
+  // const supabase = createClient();
 
   const usernameHandler = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -41,11 +37,7 @@ const AuthConfirmComponent = ({
         withAsterisk
         ref={usernameRef}
       />
-      <Button
-        component="a"
-        href={searchParams.confirmUrl}
-        onClick={usernameHandler}
-      >
+      <Button component="a" href={searchParams.confirmUrl} onClick={usernameHandler}>
         Click Here to confirm
       </Button>
     </>

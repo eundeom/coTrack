@@ -16,10 +16,7 @@ const PlaylistsPage = async ({ params: { playlistsId } }: { params: { playlistsI
 
   return (
     <>
-      <PlaylistsComponent
-        playlistsId={playlistsId}
-        // userId={userData.user!.id}
-      />
+      <PlaylistsComponent playlistsId={playlistsId} />
     </>
   );
 };

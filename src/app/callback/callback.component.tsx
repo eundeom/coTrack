@@ -1,7 +1,6 @@
 "use client";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/Admin";
 import { LoadingOverlay } from "@mantine/core";
 import { useTokenState } from "../context/token.provider";
 import { useUserState } from "../context/user.provider";
@@ -16,15 +15,14 @@ interface TokenData {
 
 const CallbackComponent = ({ token }: { token: TokenData }) => {
   const router = useRouter();
-  const supabase = createClient();
   const { setAccessToken } = useTokenState();
-  const { userId, setUserId } = useUserState();
+  const { userId } = useUserState();
 
   const currentTime = new Date();
   const futureTime = new Date(currentTime.getTime() + 3300 * 1000);
   const futureTimeString = futureTime.toISOString();
 
-  useEffect(() => {
+  if (userId) {
     const setToken = async () => {
       const { error } = await supabase.from("token").insert({
         user_id: userId,
@@ -36,20 +34,10 @@ const CallbackComponent = ({ token }: { token: TokenData }) => {
         // console.error(error);
       }
       setAccessToken(token.access_token);
-      setUserId(userId);
     };
     setToken();
     router.push("/playlist/main");
-  }, [
-    futureTimeString,
-    router,
-    setAccessToken,
-    setUserId,
-    supabase,
-    token.access_token,
-    token.refresh_token,
-    userId,
-  ]);
+  }
 
   return (
     <>

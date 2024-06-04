@@ -1,6 +1,6 @@
 import "server-only";
 import CallbackComponent from "./callback.component";
-import { makeServerClient } from "@/utils/supabase/server";
+import { supabase } from "@/utils/supabase/Admin";
 
 const CallbackPage = async ({ searchParams: { code } }: any) => {
   const client_id = process.env.SPOTIFY_CLIENT_ID!;
@@ -20,16 +20,11 @@ const CallbackPage = async ({ searchParams: { code } }: any) => {
     body: params.toString(),
   }).then((res) => res.json());
 
-  console.log("token", data);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // // user id from supabase
-  // const supabase = makeServerClient();
-
-  // const { data: Udata, error } = await supabase.auth.getSession();
-  // if (!Udata) {
-  //   console.error(error);
-  // }
-  // console.log("Udata", Udata.session?.user.id);
+  console.log("user", user);
 
   return (
     <>

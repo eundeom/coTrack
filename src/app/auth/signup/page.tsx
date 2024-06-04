@@ -1,14 +1,12 @@
 "use client";
 import { TextInput, Group, Button, PasswordInput } from "@mantine/core";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/Admin";
 import { useRef } from "react";
 import Link from "next/link";
 
 const SignUpPage = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-
-  const supabase = createClient();
 
   const signupHandler = async (e: { preventDefault: () => void }) => {
     e.preventDefault();

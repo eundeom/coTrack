@@ -1,5 +1,5 @@
 "use client";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/Admin";
 import { TextInput, Button, PasswordInput, Center } from "@mantine/core";
 import Link from "next/link";
 import { useRef } from "react";
@@ -9,9 +9,7 @@ import { useUserState } from "@/app/context/user.provider";
 const LoginPage = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const { user, setUser } = useUserState();
-
-  const supabase = createClient();
+  const { setUser, setUserId } = useUserState();
 
   const LoginHandler = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -27,6 +25,7 @@ const LoginPage = () => {
       });
       if (data.user) {
         setUser(true);
+        setUserId(data.user.id);
 
         fetch("/api/spotify", { method: "POST" })
           .then((res) => res.json())

@@ -1,8 +1,9 @@
+import { Database } from "@/database.types";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
+export const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!,
   {
     auth: {
       autoRefreshToken: false,
@@ -10,6 +11,3 @@ const supabase = createClient(
     },
   },
 );
-
-// Access auth admin api
-const adminAuthClient = supabase.auth.admin;

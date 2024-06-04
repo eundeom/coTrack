@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Image, Flex, Button, Select } from "@mantine/core";
 import "../../../../app/globals.css";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/Admin";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../playlist.css";
@@ -47,13 +47,9 @@ type playlistsData = {
 
 const PlaylistComponent = ({ username }: PlaylistProps) => {
   const router = useRouter();
-  const supabase = createClient();
   const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
-  const searchRef = useRef<HTMLInputElement>(null);
-  const [tracks, setTracks] = useState<Track[]>([]);
   const [allPlaylists, setAllplaylists] = useState<playlistData[] | null>([]);
   const { userId } = useUserState();
-  const { accessToken } = useTokenState();
 
   useEffect(() => {
     if (!username) {

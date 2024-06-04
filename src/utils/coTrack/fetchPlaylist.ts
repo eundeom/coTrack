@@ -1,7 +1,7 @@
 // 디비를 쓴다면 그냥 userId를 payload로 받는 API를 만드는게 낫지 않을까?
 
 import { getVisionZFile } from "@visionz/upload-helper-react";
-import { createClient } from "../supabase/client";
+import { supabase } from "@/utils/supabase/Admin";
 
 type playlistsData = {
   name: string;
@@ -10,7 +10,6 @@ type playlistsData = {
 };
 
 const fetchPlaylist = async (userId: string) => {
-  const supabase = createClient();
   try {
     const { data: getPlaylistData, error: getPlaylistError } = await supabase
       .from("playlist_users")

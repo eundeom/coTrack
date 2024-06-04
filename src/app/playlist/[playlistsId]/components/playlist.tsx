@@ -1,15 +1,14 @@
 "use client";
 import { Flex, Button, Container, Modal, Chip, Image } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { createClient } from "@/utils/supabase/client";
-import { SetStateAction, useEffect, useState } from "react";
+import { supabase } from "@/utils/supabase/Admin";
+import { useEffect, useState } from "react";
 import getTrack from "@/utils/spotify/getTrack";
 import { useRouter } from "next/navigation";
 import PlaylistItemsComponent from "./Items";
 import { useTokenState } from "@/app/context/token.provider";
 import { useUserState } from "@/app/context/user.provider";
 import fetchPlaylist from "@/utils/coTrack/fetchPlaylist";
-// import UserModal from "./userModal";
 
 type Track = {
   id: string;
@@ -28,7 +27,6 @@ type playlistsData = {
 
 const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const router = useRouter();
-  const supabase = createClient();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [playlistName, setPlaylistName] = useState<string>();
   const [description, setDescription] = useState<string | null>();

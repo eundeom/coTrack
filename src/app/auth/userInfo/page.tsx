@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, TextInput } from "@mantine/core";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/Admin";
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useUserState } from "@/app/context/user.provider";
@@ -10,7 +10,6 @@ const UserInfoPage = () => {
   const { userId } = useUserState();
   const usernameRef = useRef<HTMLInputElement>(null);
 
-  const supabase = createClient();
   const router = useRouter();
 
   const usernameHandler = async () => {
