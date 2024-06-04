@@ -95,6 +95,17 @@ const MyPage = () => {
           <span>followers : {followers}</span>
           <span>&nbsp;</span>
           <span>following : {following === 0 ? 0 : following}</span>
+
+          {/* invite code */}
+          <div>
+            <h2
+              onClick={() => {
+                router.push(`/playlist/joinNewPlaylist`);
+              }}
+            >
+              Join new playlist!
+            </h2>
+          </div>
         </div>
       </Container>
     </>
