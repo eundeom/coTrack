@@ -103,10 +103,13 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
         )
         .eq("playlist_id", playlistsId);
 
+      console.log(createdWithData);
+
       if (createdWithData && createdWithData.length > 0) {
         const createdWithMap = createdWithData.map(async (data) => ({
           id: data.user_id,
-          username: await userIdToName(data.user_id),
+          // username: await userIdToName(data.user_id),
+          username: data.users?.username,
         }));
 
         setCreatedWith(await Promise.all(createdWithMap));
@@ -115,20 +118,20 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
     getCreatedWith();
   }, [getAccessToken, playlistsId, supabase]);
 
-  const userIdToName = async (userId: string) => {
-    if (!userId) return null;
+  // const userIdToName = async (userId: string) => {
+  //   if (!userId) return null;
 
-    const { data: UsernameData, error } = await supabase
-      .from("users")
-      .select("username")
-      .eq("id", userId);
+  //   const { data: UsernameData, error } = await supabase
+  //     .from("users")
+  //     .select("username")
+  //     .eq("id", userId);
 
-    if (UsernameData) {
-      return UsernameData[0]?.username;
-    } else {
-      return;
-    }
-  };
+  //   if (UsernameData) {
+  //     return UsernameData[0]?.username;
+  //   } else {
+  //     return;
+  //   }
+  // };
 
   // user modal section
   const getFollower = async (userId: string) => {

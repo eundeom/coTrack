@@ -77,7 +77,7 @@ const PlaylistComponent = () => {
       setAllplaylists(playlistData);
     };
     getAllPlaylist();
-  }, [router, userId]);
+  }, [router, supabase, userId]);
 
   // autocomplete array
   const playlistNames = Array.from(
