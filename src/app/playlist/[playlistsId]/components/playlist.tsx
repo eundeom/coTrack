@@ -1,7 +1,7 @@
 "use client";
 import { Flex, Button, Container, Modal, Chip, Image } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { supabase } from "@/utils/supabase/Admin";
+import { makeBrowserClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import getTrack from "@/utils/spotify/getTrack";
 import { useRouter } from "next/navigation";
@@ -27,10 +27,11 @@ type playlistsData = {
 
 const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const router = useRouter();
+  const supabase = makeBrowserClient();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [playlistName, setPlaylistName] = useState<string>();
   const [description, setDescription] = useState<string | null>();
-  const { accessToken } = useTokenState();
+  const { getAccessToken } = useTokenState();
   const { userId } = useUserState();
   const [createdWith, setCreatedWith] = useState<
     {
@@ -59,6 +60,8 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
         console.error(error);
         return;
       }
+
+      const accessToken = await getAccessToken();
       const songIds = SongData.map((song) => song.song_id).join(",");
       const songInfo = await getTrack(songIds, accessToken);
       setTracks(songInfo);
@@ -110,7 +113,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       }
     };
     getCreatedWith();
-  }, [accessToken, playlistsId, supabase]);
+  }, [getAccessToken, playlistsId, supabase]);
 
   const userIdToName = async (userId: string) => {
     if (!userId) return null;

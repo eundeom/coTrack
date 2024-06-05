@@ -3,7 +3,7 @@ import { Container, Flex } from "@mantine/core";
 import { useRef, useState } from "react";
 import { getVisionZFile, useVisionZUpload } from "@visionz/upload-helper-react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { makeBrowserClient } from "@/utils/supabase/client";
 import searchTracks from "@/utils/spotify/searchTrack";
 import PlaylistItemsComponent from "./tracks";
 import UploadFileComponent from "./uploadFile";
@@ -24,6 +24,7 @@ type Track = {
 
 const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) => {
   const router = useRouter();
+  const supabase = makeBrowserClient();
   const titleRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -31,8 +32,6 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
   const [playlist, setPlaylist] = useState<Track[]>([]);
   const { accessToken, setAccessToken } = useTokenState();
   const { userId } = useUserState();
-
-  const supabase = createClient();
 
   const { onFileChange, uploadSelectedFile, selectedFile } = useVisionZUpload("/api/upload");
 
@@ -45,6 +44,10 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
     const playlist_name = titleRef.current!.value.trim();
     const description = descriptionRef.current!.value.trim();
 
+    // invite code expiration time
+    const currentTime = new Date();
+    const after30 = new Date(currentTime.getTime() + 30 * 60000);
+
     const { data: playlistId, error: PlaylistError } = await supabase
       .from("playlists")
       .insert({
@@ -52,6 +55,7 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
         playlist_name,
         playlistcover: uploadSrc,
         description,
+        code_expiration_time: after30,
       })
       .select("id");
     if (!playlistId) {
@@ -62,8 +66,6 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
     const { data: userInsertData, error: userInsertError } = await supabase
       .from("playlist_users")
       .insert({ user_id: userId as string, playlist_id: playlistId![0].id });
-
-    console.log(userInsertData);
 
     const songsToInsert = playlist.map((track) => ({
       user_id: userId,
@@ -77,6 +79,11 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
       console.error(InsertError);
     }
 
+    // create UUID
+    let uuid = self.crypto.randomUUID();
+    console.log(uuid);
+    // DB insert
+
     router.push(`/playlist/${playlistId![0].id}`);
   };
 
@@ -89,10 +96,10 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
         return null;
       }
 
-      console.log("uploadId:", uploadId);
+      // console.log("uploadId:", uploadId);
 
       const fileUrl = await getVisionZFile("/api/upload", uploadId);
-      console.log("fileUrl:", fileUrl);
+      // console.log("fileUrl:", fileUrl);
 
       return uploadId;
     } catch (error) {
@@ -108,7 +115,7 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
 
     // changed using provider.
     const fetchedTracks = await searchTracks(query, accessToken as string);
-    console.log(fetchedTracks);
+    // console.log(fetchedTracks);
 
     setTracks(fetchedTracks);
   };

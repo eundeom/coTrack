@@ -2,14 +2,11 @@
 import Link from "next/link";
 import { Image, Flex, Button, Select } from "@mantine/core";
 import "../../../../app/globals.css";
-import { supabase } from "@/utils/supabase/Admin";
-import { useEffect, useRef, useState } from "react";
+import { makeBrowserClient } from "@/utils/supabase/client";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../playlist.css";
-import { getVisionZFile } from "@visionz/upload-helper-react";
 import { useUserState } from "@/app/context/user.provider";
-import searchTracks from "../../playlistBuilder/components/searchTracks";
-import { useTokenState } from "@/app/context/token.provider";
 import fetchPlaylist from "@/utils/coTrack/fetchPlaylist";
 
 /**
@@ -45,16 +42,28 @@ type playlistsData = {
   id: string;
 };
 
-const PlaylistComponent = ({ username }: PlaylistProps) => {
+const PlaylistComponent = () => {
   const router = useRouter();
+  const supabase = makeBrowserClient();
   const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
   const [allPlaylists, setAllplaylists] = useState<playlistData[] | null>([]);
-  const { userId } = useUserState();
+  const { userId, setUser, setUserId } = useUserState();
+  const [username, setUsername] = useState<string | undefined>("");
 
   useEffect(() => {
-    if (!username) {
-      router.push("/auth/login");
-    }
+    // if (!username) {
+    //   router.push("/auth/login");
+    // }
+    const getUserInfo = async () => {
+      const { data: userData, error } = await supabase
+        .from("users")
+        .select()
+        .eq("id", userId as string)
+        .single();
+
+      setUsername(userData?.username);
+    };
+    getUserInfo();
 
     const getPlaylist = async () => {
       const fetchedPlaylist = await fetchPlaylist(userId as string);
@@ -68,7 +77,7 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
       setAllplaylists(playlistData);
     };
     getAllPlaylist();
-  }, [router, supabase, userId, username]);
+  }, [router, userId]);
 
   // autocomplete array
   const playlistNames = Array.from(
@@ -82,12 +91,13 @@ const PlaylistComponent = ({ username }: PlaylistProps) => {
 
   const logOutHandler = async () => {
     const { error } = await supabase.auth.signOut();
-
     const { error: Derror } = await supabase
       .from("token")
       .delete()
       .eq("user_id", userId as string);
 
+    setUser(false);
+    setUserId(null);
     router.replace("/auth/login");
   };
 

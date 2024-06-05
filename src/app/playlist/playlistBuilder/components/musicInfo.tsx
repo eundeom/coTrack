@@ -47,7 +47,7 @@ const PlaylistInfoComponent: React.FC<PlaylistInfoComponentProps> = ({
         </div>
 
         {/* Create with */}
-        <div
+        {/* <div
           style={{
             display: "flex",
             alignItems: "center",
@@ -62,7 +62,7 @@ const PlaylistInfoComponent: React.FC<PlaylistInfoComponentProps> = ({
           <Button variant="outline" color="rgba(168, 165, 165, 1)" radius="lg" ml={10}>
             Search
           </Button>
-        </div>
+        </div> */}
 
         {/* Add Music */}
         <div

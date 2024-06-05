@@ -20,11 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ColorSchemeScript />
       </head>
       <body>
-        <TokenProvider>
-          <UserProvider>
+        <UserProvider>
+          <TokenProvider>
             <MantineProvider>{children}</MantineProvider>
-          </UserProvider>
-        </TokenProvider>
+          </TokenProvider>
+        </UserProvider>
       </body>
     </html>
   );

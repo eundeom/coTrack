@@ -1,5 +1,3 @@
-// 디비를 쓴다면 그냥 userId를 payload로 받는 API를 만드는게 낫지 않을까?
-
 import { getVisionZFile } from "@visionz/upload-helper-react";
 import { supabase } from "@/utils/supabase/Admin";
 
@@ -39,7 +37,7 @@ const fetchPlaylist = async (userId: string) => {
       return await Promise.all(playlistsData);
     }
   } catch (error) {
-    console.log("log in failed");
+    // console.log("log in failed");
   }
 };
 
@@ -47,7 +45,8 @@ const convertToSrc = async (playlistCover: string | null) => {
   if (!playlistCover) return null;
 
   try {
-    const imageSrc = await getVisionZFile("http://localhost:3000/api/upload", playlistCover);
+    const imageSrc = await getVisionZFile("https://co-track.vercel.app/api/upload", playlistCover);
+    // const imageSrc = await getVisionZFile("http://localhost:3000/api/upload", playlistCover);
     return imageSrc;
   } catch (error) {
     console.error("Error fetching image:", error);

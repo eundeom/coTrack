@@ -1,10 +1,11 @@
 "use client";
 import { TextInput, Group, Button, PasswordInput } from "@mantine/core";
-import { supabase } from "@/utils/supabase/Admin";
+import { makeBrowserClient } from "@/utils/supabase/client";
 import { useRef } from "react";
 import Link from "next/link";
 
 const SignUpPage = () => {
+  const supabase = makeBrowserClient();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -21,7 +22,8 @@ const SignUpPage = () => {
         data: {
           originUrl: location.origin,
         },
-        emailRedirectTo: "http://localhost:3000/auth/userInfo",
+        // emailRedirectTo: "http://localhost:3000/auth/userInfo",
+        emailRedirectTo: "https://co-track.vercel.app/auth/userInfo",
       },
     });
     console.log(data.user, "user");

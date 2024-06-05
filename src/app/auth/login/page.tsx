@@ -1,6 +1,6 @@
 "use client";
-import { supabase } from "@/utils/supabase/Admin";
-import { TextInput, Button, PasswordInput, Center } from "@mantine/core";
+import { makeBrowserClient } from "@/utils/supabase/client";
+import { TextInput, Button, PasswordInput } from "@mantine/core";
 import Link from "next/link";
 import { useRef } from "react";
 import "../auth.css";
@@ -9,7 +9,7 @@ import { useUserState } from "@/app/context/user.provider";
 const LoginPage = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const { setUser, setUserId } = useUserState();
+  const { setUser, setUserId, userId } = useUserState();
 
   const LoginHandler = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -19,17 +19,30 @@ const LoginPage = () => {
     if (!email || !password) return;
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const authSupabase = makeBrowserClient();
+
+      const { data, error } = await authSupabase.auth.signInWithPassword({
         email,
         password,
       });
+
       if (data.user) {
         setUser(true);
         setUserId(data.user.id);
+        console.log(userId);
 
-        fetch("/api/spotify", { method: "POST" })
-          .then((res) => res.json())
-          .then((url) => location.replace(url));
+        const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
+        // const redirect_uri = "http://localhost:3000/api/spotify";
+        const redirect_uri = "https://co-track.vercel.app/api/spotify";
+        const SCOPE = "user-read-private user-read-email";
+
+        const params = new URLSearchParams();
+        params.set("response_type", "code");
+        params.set("client_id", client_id);
+        params.set("scope", SCOPE);
+        params.set("redirect_uri", redirect_uri);
+
+        location.replace("https://accounts.spotify.com/authorize?" + params.toString());
       } else {
         alert("log in failed");
       }

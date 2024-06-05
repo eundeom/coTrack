@@ -1,7 +1,7 @@
 import { supabase } from "@/utils/supabase/Admin";
 import { makeServerClient } from "@/utils/supabase/server";
-import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+
 interface TokenData {
   access_token: string;
   token_type: string;
@@ -9,20 +9,21 @@ interface TokenData {
   refresh_token: string;
   scope: string;
 }
+export async function POST(req: NextRequest) {
+  const authSupabase = makeServerClient();
+  const {
+    data: { user },
+  } = await authSupabase.auth.getUser();
+  if (!user) return NextResponse.redirect(new URL("/auth/login", req.url));
 
-export async function GET(req: NextRequest) {
+  const { data: tokenData } = await supabase.from("token").select().eq("user_id", user.id).single();
+
   const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
   const client_secret = process.env.SPOTIFY_CLIENT_SECRET!;
-  // const redirect_uri = "http://localhost:3000/api/spotify";
-  const redirect_uri = "https://co-track.vercel.app/api/spotify";
-
-  const code = req.nextUrl.searchParams.get("code")!;
-  console.log("spotify code:", code);
 
   const params = new URLSearchParams();
-  params.set("code", code);
-  params.set("redirect_uri", redirect_uri);
-  params.set("grant_type", "authorization_code");
+  params.set("grant_type", "refresh_token");
+  params.set("refresh_token", tokenData!.refresh_token);
 
   const data: TokenData = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
@@ -33,23 +34,16 @@ export async function GET(req: NextRequest) {
     body: params.toString(),
   }).then((res) => res.json());
 
-  const authSupabase = makeServerClient();
-
   const currentTime = new Date();
   const futureTime = new Date(currentTime.getTime() + (data.expires_in - 300) * 1000);
   const futureTimeString = futureTime.toISOString();
 
-  const {
-    data: { user },
-  } = await authSupabase.auth.getUser();
-  if (!user) return NextResponse.redirect(new URL("/auth/login", req.url));
-
-  await supabase.from("token").insert({
-    user_id: user.id,
+  const returnData = {
     access_token: data.access_token,
     refresh_token: data.refresh_token,
     expire_at: futureTimeString,
-  });
+  };
+  await supabase.from("token").update(returnData).eq("id", tokenData!.id);
 
-  return NextResponse.redirect(new URL("/playlist/main", req.url));
+  return NextResponse.json(returnData);
 }

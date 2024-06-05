@@ -1,4 +1,5 @@
 "use client";
+import { makeBrowserClient } from "@/utils/supabase/client";
 import React, { createContext, useState, useContext, useEffect } from "react";
 
 interface UserContextType {
@@ -24,23 +25,14 @@ export const UserProvider = ({ children }: { children: any }) => {
 
   useEffect(() => {
     const checkCredential = async () => {
-      try {
-        const response = await fetch("/api/auth/checkCredential", {
-          method: "POST",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUserId(data);
-          setUser(true);
-        } else {
-          setUserId(null);
-          setUser(false);
-        }
-      } catch (error) {
-        console.error("Error checking credentials:", error);
+      const authSupabase = makeBrowserClient();
+      const {
+        data: { user },
+      } = await authSupabase.auth.getUser();
 
-        setUserId(null);
-        setUser(false);
+      if (user) {
+        setUser(true);
+        setUserId(user.id);
       }
     };
     checkCredential();

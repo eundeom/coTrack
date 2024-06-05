@@ -1,12 +1,13 @@
 "use client";
 import { Button, TextInput } from "@mantine/core";
-import { supabase } from "@/utils/supabase/Admin";
+import { makeBrowserClient } from "@/utils/supabase/client";
 import { useRef } from "react";
 
 // username 받아서 DB INSERT
 
 const AuthConfirmComponent = ({ searchParams }: { searchParams: { confirmUrl: string } }) => {
   const usernameRef = useRef<HTMLInputElement>(null);
+  const supabase = makeBrowserClient();
 
   // const supabase = createClient();
 
