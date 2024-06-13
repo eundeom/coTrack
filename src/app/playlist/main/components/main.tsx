@@ -55,12 +55,6 @@ const PlaylistComponent = () => {
     //   router.push("/auth/login");
     // }
 
-    // // get Access Token //
-    // const getToken = async () => {
-    //   const token = await getAccessToken();
-    // };
-    // getToken();
-
     const getUserInfo = async () => {
       const getUserInfoResponse = await fetch("/api/user/getUserInfo", {
         method: "POST",
@@ -68,7 +62,6 @@ const PlaylistComponent = () => {
       });
       const getUserInfoResult = await getUserInfoResponse.json();
       const userData = getUserInfoResult.data;
-      console.log(userData);
 
       setUsername(userData?.username);
     };

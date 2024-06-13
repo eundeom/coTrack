@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import PlaylistItemsComponent from "./Items";
 import { useTokenState } from "@/app/context/token.provider";
 import { useUserState } from "@/app/context/user.provider";
+import { getVisionZFile } from "@visionz/upload-helper-react";
 // import fetchPlaylist from "@/utils/coTrack/fetchPlaylist";
 
 type Track = {
@@ -22,6 +23,7 @@ type playlistsData = {
   name: string;
   cover: string | null;
   id: string;
+  playlist_id: string;
 };
 
 const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
@@ -57,7 +59,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       const getSongResult = await getSongResponse.json();
 
       const accessToken = await getAccessToken();
-      console.log(accessToken);
+
       if (accessToken) {
         const songIds = getSongResult.data.map((song: { song_id: any }) => song.song_id).join(",");
         const songInfo = await getTrack(songIds, accessToken);
@@ -116,7 +118,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
     });
     const getFollowerResult = await getFollowerResponse.json();
 
-    setFollowers(getFollowerResult?.length);
+    setFollowers(getFollowerResult.data?.length);
   };
 
   const getFollowing = async (userId: string) => {
@@ -126,7 +128,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
     });
     const getFollowingResult = await getFollowingResponse.json();
 
-    setFollowing(getFollowingResult?.length);
+    setFollowing(getFollowingResult.data?.length);
   };
 
   useEffect(() => {
@@ -142,68 +144,93 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
     // 내가 이 사람을 팔로우하고 있는지 확인 setFollow update
   }, [opened, createdWith, selectedUsername]);
 
-  // useEffect(() => {
-  //   // check follow state
-  //   const getFollowState = async () => {
-  //     const getFollowStateResponse = await fetch("/api/follow/getFollowState", {
-  //       method: "POST",
-  //       body: JSON.stringify({ userId, selectedUserId }),
-  //     });
-  //     const getFollowStateResult = await getFollowStateResponse.json();
+  useEffect(() => {
+    // check follow state
+    const getFollowState = async () => {
+      const getFollowStateResponse = await fetch("/api/follow/getFollowState", {
+        method: "POST",
+        body: JSON.stringify({ userId, selectedUserId }),
+      });
+      const getFollowStateResult = await getFollowStateResponse.json();
 
-  //     if (getFollowStateResult) {
-  //       setFollowChecked(true);
-  //     } else {
-  //       return;
-  //     }
-  //   };
+      if (getFollowStateResult) {
+        setFollowChecked(true);
+      } else {
+        return;
+      }
+    };
 
-  //   getFollower(selectedUserId);
-  //   getFollowing(selectedUserId);
+    //  get playlist using selectedUserId
+    const getPlaylist = async () => {
+      const getPlaylistResponse = await fetch("/api/playlist/getPlaylist", {
+        method: "POST",
+        body: JSON.stringify({ payload: selectedUserId }),
+      });
 
-  //   //  get playlist using selectedUserId
-  //   const getPlaylist = async () => {
-  //     const getPlaylistResponse = await fetch("/api/playlist/getPlaylist", {
-  //       method: "POST",
-  //       body: JSON.stringify({ payload: selectedUserId }),
-  //     });
+      const getPlaylistResult = await getPlaylistResponse.json();
 
-  //     const getPlaylistResult = await getPlaylistResponse.json();
-  //     setPlaylists(getPlaylistResult);
-  //   };
+      const getPlaylistData = getPlaylistResult.data;
 
-  //   if (userId) {
-  //     getFollowState();
+      if (getPlaylistData && getPlaylistData.length > 0) {
+        const playlistsData: Promise<playlistsData>[] = getPlaylistData.map(
+          async (playlist: {
+            playlists: { playlist_name: string; playlistcover: string | null };
+            playlist_id: string;
+          }) => ({
+            name: playlist.playlists.playlist_name,
+            cover: await convertToSrc(playlist.playlists.playlistcover),
+            id: playlist.playlist_id,
+          }),
+        );
+        setPlaylists(await Promise.all(playlistsData));
+      }
+      // setPlaylists(getPlaylistResult.data);
+    };
 
-  //     getFollower(selectedUserId);
-  //     getFollowing(selectedUserId);
+    if (selectedUserId) {
+      getFollowState();
 
-  //     getPlaylist();
-  //   }
-  // }, [selectedUserId, userId]);
+      getFollower(selectedUserId);
+      getFollowing(selectedUserId);
+
+      getPlaylist();
+    }
+  }, [opened, selectedUserId, userId]);
+
+  const convertToSrc = async (playlistCover: string | null) => {
+    if (!playlistCover) return null;
+
+    try {
+      const imageSrc = await getVisionZFile(`${window.location.origin}/api/upload`, playlistCover);
+      return imageSrc;
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      return null;
+    }
+  };
 
   const userModal = () => {
     const updateFollow = async () => {
       if (followChecked) {
-        // 팔로우 상태인데 누른거임 --> 팔로우 취소하기 (DB에서 삭제)
+        // 팔로우 상태인데 누름 --> 팔로우 취소하기 (DB에서 삭제)
 
-        const updateFollowResponse = await fetch("/api/playlist/updateFollow", {
+        const updateFollowResponse = await fetch("/api/follow/updateFollow", {
           method: "POST",
           body: JSON.stringify({ userId, selectedUserId, type: "delete" }),
         });
 
-        const updateFollowResult = await updateFollowResponse.json();
+        await updateFollowResponse.json();
 
         // follower update
         getFollower(selectedUserId);
       } else {
-        // 팔로우 안된 상태에서 누른거임 --> 팔로우 하기 (DB insert)
-        const updateFollowResponse = await fetch("/api/playlist/updateFollow", {
+        // 팔로우 안된 상태에서 누름 --> 팔로우 하기 (DB insert)
+        const updateFollowResponse = await fetch("/api/follow/updateFollow", {
           method: "POST",
           body: JSON.stringify({ userId, selectedUserId, type: "insert" }),
         });
 
-        const updateFollowResult = await updateFollowResponse.json();
+        await updateFollowResponse.json();
 
         getFollower(selectedUserId);
       }
@@ -308,7 +335,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
         </Flex>
         <h2 style={{ marginLeft: 50, color: "lightgray" }}>{description}</h2>
 
-        {/* {userModal()} */}
+        {userModal()}
         <div style={{ marginLeft: 50 }}>
           <span>
             created by :<span>&nbsp;</span>

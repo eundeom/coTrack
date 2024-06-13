@@ -37,16 +37,6 @@ const PlaylistBuilderComponent = () => {
 
   ////////////////////////////////////////////////////////////
 
-  // useEffect(() => {
-  //   // get Access Token //
-  //   const getToken = async () => {
-  //     const token = await getAccessToken();
-
-  //     setAccessToken(token);
-  //   };
-  //   getToken();
-  // }, []);
-
   const createPlaylistHandler = async () => {
     // playlist title, description, playlist DB INSERT !!!! and redirect to playlist
     const uploadSrc = await uploadPlaylistCover();
@@ -156,7 +146,6 @@ const PlaylistBuilderComponent = () => {
     // changed using provider.
     const accessToken = await getAccessToken();
     const fetchedTracks = await searchTracks(query, accessToken);
-    // console.log(fetchedTracks);
 
     setTracks(fetchedTracks);
   };

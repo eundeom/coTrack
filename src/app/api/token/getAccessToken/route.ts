@@ -10,7 +10,6 @@ export async function POST() {
   if (!user) return NextResponse.json("no user", { status: 401 });
 
   const { data, error } = await supabase.from("token").select("*").eq("user_id", user.id).single();
-  console.log("data", data);
 
   return NextResponse.json(data);
 }
