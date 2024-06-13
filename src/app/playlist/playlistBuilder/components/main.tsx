@@ -1,9 +1,8 @@
 "use client";
 import { Container, Flex } from "@mantine/core";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getVisionZFile, useVisionZUpload } from "@visionz/upload-helper-react";
 import { useRouter } from "next/navigation";
-import { makeBrowserClient } from "@/utils/supabase/client";
 import searchTracks from "@/utils/spotify/searchTrack";
 import PlaylistItemsComponent from "./tracks";
 import UploadFileComponent from "./uploadFile";
@@ -22,20 +21,31 @@ type Track = {
   duration: string;
 };
 
-const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) => {
+const PlaylistBuilderComponent = () => {
   const router = useRouter();
-  const supabase = makeBrowserClient();
   const titleRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [playlist, setPlaylist] = useState<Track[]>([]);
-  const { accessToken, setAccessToken } = useTokenState();
+  // const { accessToken, setAccessToken } = useTokenState();
+  const { getAccessToken } = useTokenState();
+  // const [accessToken, setAccessToken] = useState<string>();
   const { userId } = useUserState();
 
   const { onFileChange, uploadSelectedFile, selectedFile } = useVisionZUpload("/api/upload");
 
   ////////////////////////////////////////////////////////////
+
+  // useEffect(() => {
+  //   // get Access Token //
+  //   const getToken = async () => {
+  //     const token = await getAccessToken();
+
+  //     setAccessToken(token);
+  //   };
+  //   getToken();
+  // }, []);
 
   const createPlaylistHandler = async () => {
     // playlist title, description, playlist DB INSERT !!!! and redirect to playlist
@@ -48,35 +58,66 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
     const currentTime = new Date();
     const after30 = new Date(currentTime.getTime() + 30 * 60000);
 
-    const { data: playlistId, error: PlaylistError } = await supabase
-      .from("playlists")
-      .insert({
+    // INSERT playlists - 플레이리스트 추가!
+    const insertPlaylistPlayload = {
+      playlistInfo: {
         created_by: userId,
         playlist_name,
         playlistcover: uploadSrc,
         description,
         code_expiration_time: after30,
-      })
-      .select("id");
-    if (!playlistId) {
-      console.error(PlaylistError);
-    }
+      },
+      select: "id",
+    };
+    const playlistResponse = await fetch("/api/playlist/insert", {
+      method: "POST",
+      body: JSON.stringify({
+        payload: insertPlaylistPlayload,
+      }),
+    });
+
+    const playlistResult = await playlistResponse.json();
+    const playlistId = playlistResult.data[0].id;
 
     // INSERT playlist_users
-    const { data: userInsertData, error: userInsertError } = await supabase
-      .from("playlist_users")
-      .insert({ user_id: userId as string, playlist_id: playlistId![0].id });
+    const insertUserPlayload = {
+      userInfo: { user_id: userId as string, playlist_id: playlistId },
+    };
 
+    const userResponse = await fetch("/api/user/insert", {
+      method: "POST",
+      body: JSON.stringify({
+        payload: insertUserPlayload,
+      }),
+    });
+
+    const userResult = await userResponse.json();
+    if (userResponse.ok) {
+      // setUserData(result.data);
+    } else {
+      console.error(userResult.error);
+    }
+
+    // INSERT playlist_songs
     const songsToInsert = playlist.map((track) => ({
       user_id: userId,
       song_id: track.id,
-      playlist_id: playlistId![0].id,
+      playlist_id: playlistId,
     }));
 
-    const { error: InsertError } = await supabase.from("playlist_songs").insert(songsToInsert);
+    const insertSongsPlayload = { songsToInsert };
 
-    if (InsertError) {
-      console.error(InsertError);
+    const songsResponse = await fetch("/api/song/insert", {
+      method: "POST",
+      body: JSON.stringify({
+        payload: insertSongsPlayload,
+      }),
+    });
+    const songsResult = await songsResponse.json();
+    if (songsResponse.ok) {
+      // setUserData(result.data);
+    } else {
+      console.error(songsResult.error);
     }
 
     // create UUID
@@ -84,7 +125,7 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
     console.log(uuid);
     // DB insert
 
-    router.push(`/playlist/${playlistId![0].id}`);
+    router.push(`/playlist/${playlistId}`);
   };
 
   const uploadPlaylistCover = async () => {
@@ -95,7 +136,6 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
         console.log("No file selected.");
         return null;
       }
-
       // console.log("uploadId:", uploadId);
 
       const fileUrl = await getVisionZFile("/api/upload", uploadId);
@@ -114,7 +154,8 @@ const PlaylistBuilderComponent = ({ access_token }: { access_token: string }) =>
     const query = searchRef.current!.value.trim();
 
     // changed using provider.
-    const fetchedTracks = await searchTracks(query, accessToken as string);
+    const accessToken = await getAccessToken();
+    const fetchedTracks = await searchTracks(query, accessToken);
     // console.log(fetchedTracks);
 
     setTracks(fetchedTracks);

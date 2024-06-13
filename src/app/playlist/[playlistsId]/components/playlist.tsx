@@ -1,14 +1,13 @@
 "use client";
 import { Flex, Button, Container, Modal, Chip, Image } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { makeBrowserClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import getTrack from "@/utils/spotify/getTrack";
 import { useRouter } from "next/navigation";
 import PlaylistItemsComponent from "./Items";
 import { useTokenState } from "@/app/context/token.provider";
 import { useUserState } from "@/app/context/user.provider";
-import fetchPlaylist from "@/utils/coTrack/fetchPlaylist";
+// import fetchPlaylist from "@/utils/coTrack/fetchPlaylist";
 
 type Track = {
   id: string;
@@ -27,7 +26,6 @@ type playlistsData = {
 
 const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const router = useRouter();
-  const supabase = makeBrowserClient();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [playlistName, setPlaylistName] = useState<string>();
   const [description, setDescription] = useState<string | null>();
@@ -48,112 +46,87 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
 
   useEffect(() => {
+    if (!userId) return;
+
     const getSong = async () => {
-      // get the song id [skdh, sidjhf, sdoi, ...]
+      const getSongResponse = await fetch("/api/song/getSong", {
+        method: "POST",
+        body: JSON.stringify({ playlistsId }),
+      });
 
-      const { data: SongData, error } = await supabase
-        .from("playlist_songs")
-        .select("song_id")
-        .eq("playlist_id", playlistsId);
-
-      if (error) {
-        console.error(error);
-        return;
-      }
+      const getSongResult = await getSongResponse.json();
 
       const accessToken = await getAccessToken();
-      const songIds = SongData.map((song) => song.song_id).join(",");
-      const songInfo = await getTrack(songIds, accessToken);
-      setTracks(songInfo);
+      console.log(accessToken);
+      if (accessToken) {
+        const songIds = getSongResult.data.map((song: { song_id: any }) => song.song_id).join(",");
+        const songInfo = await getTrack(songIds, accessToken);
+
+        setTracks(songInfo);
+      } else {
+        console.log("no token");
+      }
     };
     getSong();
 
     const getPlaylistInfo = async () => {
-      const { data: playlistData, error: playlistError } = await supabase
-        .from("playlists")
-        .select("playlist_name, description, playlistcover")
-        .eq("id", playlistsId);
+      const getPlaylistInfoResponse = await fetch("/api/playlist/getPlaylistInfo", {
+        method: "POST",
+        body: JSON.stringify({ playlistsId }),
+      });
 
-      if (!playlistData) {
-        console.error(playlistError);
-      }
-      setPlaylistName(playlistData![0].playlist_name);
-      setDescription(playlistData![0].description);
+      const getPlaylistInfoResult = await getPlaylistInfoResponse.json();
 
-      // const imageSrc = await getVisionZFile(
-      //   "http://localhost:3000/api/upload",
-      //   playlistData![0].playlistcover
-      // );
-
-      // setplaylistCover(imageSrcs);
+      setPlaylistName(getPlaylistInfoResult.data.playlist_name);
+      setDescription(getPlaylistInfoResult.data.description);
     };
     getPlaylistInfo();
 
     const getCreatedWith = async () => {
       // get username from playlist_users
-      const { data: createdWithData, error } = await supabase
-        .from("playlist_users")
-        .select(
-          `
-    user_id,
-    users (
-      username
-    )
-  `,
-        )
-        .eq("playlist_id", playlistsId);
 
-      console.log(createdWithData);
+      const getCreatedWithResponse = await fetch("/api/user/getCreatedWith", {
+        method: "POST",
+        body: JSON.stringify({ playlistsId }),
+      });
+
+      const getCreatedWithResult = await getCreatedWithResponse.json();
+
+      const createdWithData = getCreatedWithResult.data;
 
       if (createdWithData && createdWithData.length > 0) {
-        const createdWithMap = createdWithData.map(async (data) => ({
-          id: data.user_id,
-          // username: await userIdToName(data.user_id),
-          username: data.users?.username,
-        }));
+        const createdWithMap = createdWithData.map(
+          async (data: { user_id: string; users: { username: string } }) => ({
+            id: data.user_id,
+            username: data.users?.username,
+          }),
+        );
 
         setCreatedWith(await Promise.all(createdWithMap));
       }
     };
     getCreatedWith();
-  }, [getAccessToken, playlistsId, supabase]);
-
-  // const userIdToName = async (userId: string) => {
-  //   if (!userId) return null;
-
-  //   const { data: UsernameData, error } = await supabase
-  //     .from("users")
-  //     .select("username")
-  //     .eq("id", userId);
-
-  //   if (UsernameData) {
-  //     return UsernameData[0]?.username;
-  //   } else {
-  //     return;
-  //   }
-  // };
+  }, [getAccessToken, playlistsId, userId]);
 
   // user modal section
   const getFollower = async (userId: string) => {
-    const selectedUserId = createdWith.find((user) => user.username === selectedUsername)?.id;
+    const getFollowerResponse = await fetch("/api/follow/getFollower", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+    const getFollowerResult = await getFollowerResponse.json();
 
-    const { data: followerData, error: followerError } = await supabase
-      .from("followers")
-      .select("*")
-      .eq("follow", userId);
-
-    setFollowers(followerData?.length);
+    setFollowers(getFollowerResult?.length);
   };
 
   const getFollowing = async (userId: string) => {
-    const selectedUserId = createdWith.find((user) => user.username === selectedUsername)?.id;
+    const getFollowingResponse = await fetch("/api/follow/getFollowing", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+    const getFollowingResult = await getFollowingResponse.json();
 
-    const { data: followingsData, error: followingError } = await supabase
-      .from("followers")
-      .select("*")
-      .eq("user_id", userId);
-
-    setFollowing(followingsData?.length);
+    setFollowing(getFollowingResult?.length);
   };
 
   useEffect(() => {
@@ -161,58 +134,76 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       const selectedUser: string =
         createdWith.find((user) => user.username === selectedUsername)?.id || "";
 
+      // const selectedUserId = createdWith.find((user) => user.username === selectedUsername)?.id;
+
       setSelectedUserId(selectedUser);
     }
 
     // 내가 이 사람을 팔로우하고 있는지 확인 setFollow update
   }, [opened, createdWith, selectedUsername]);
 
-  useEffect(() => {
-    // check follow state
-    const getFollowState = async () => {
-      const { data: followState, error: followError } = await supabase
-        .from("followers")
-        .select("*")
-        .eq("user_id", userId as string)
-        .eq("follow", selectedUserId as string);
+  // useEffect(() => {
+  //   // check follow state
+  //   const getFollowState = async () => {
+  //     const getFollowStateResponse = await fetch("/api/follow/getFollowState", {
+  //       method: "POST",
+  //       body: JSON.stringify({ userId, selectedUserId }),
+  //     });
+  //     const getFollowStateResult = await getFollowStateResponse.json();
 
-      if (followState) {
-        setFollowChecked(true);
-      } else {
-        return;
-      }
-    };
-    getFollowState();
+  //     if (getFollowStateResult) {
+  //       setFollowChecked(true);
+  //     } else {
+  //       return;
+  //     }
+  //   };
 
-    getFollower(selectedUserId);
-    getFollowing(selectedUserId);
+  //   getFollower(selectedUserId);
+  //   getFollowing(selectedUserId);
 
-    //  get playlist using selectedUserId
-    const getPlaylist = async () => {
-      const fetchedPlaylist = await fetchPlaylist(selectedUserId as string);
-      setPlaylists(fetchedPlaylist);
-    };
-    getPlaylist();
-  }, [selectedUserId]);
-  // if selectedUserId is exist
+  //   //  get playlist using selectedUserId
+  //   const getPlaylist = async () => {
+  //     const getPlaylistResponse = await fetch("/api/playlist/getPlaylist", {
+  //       method: "POST",
+  //       body: JSON.stringify({ payload: selectedUserId }),
+  //     });
+
+  //     const getPlaylistResult = await getPlaylistResponse.json();
+  //     setPlaylists(getPlaylistResult);
+  //   };
+
+  //   if (userId) {
+  //     getFollowState();
+
+  //     getFollower(selectedUserId);
+  //     getFollowing(selectedUserId);
+
+  //     getPlaylist();
+  //   }
+  // }, [selectedUserId, userId]);
 
   const userModal = () => {
-    const followUpdate = async () => {
+    const updateFollow = async () => {
       if (followChecked) {
         // 팔로우 상태인데 누른거임 --> 팔로우 취소하기 (DB에서 삭제)
-        const response = await supabase
-          .from("followers")
-          .delete()
-          .eq("user_id", userId as string)
-          .eq("follow", selectedUserId);
+
+        const updateFollowResponse = await fetch("/api/playlist/updateFollow", {
+          method: "POST",
+          body: JSON.stringify({ userId, selectedUserId, type: "delete" }),
+        });
+
+        const updateFollowResult = await updateFollowResponse.json();
 
         // follower update
         getFollower(selectedUserId);
       } else {
         // 팔로우 안된 상태에서 누른거임 --> 팔로우 하기 (DB insert)
-        const { data: followData, error: followError } = await supabase
-          .from("followers")
-          .insert({ user_id: userId as string, follow: selectedUserId });
+        const updateFollowResponse = await fetch("/api/playlist/updateFollow", {
+          method: "POST",
+          body: JSON.stringify({ userId, selectedUserId, type: "insert" }),
+        });
+
+        const updateFollowResult = await updateFollowResponse.json();
 
         getFollower(selectedUserId);
       }
@@ -241,7 +232,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
                 checked={followChecked}
                 onChange={() => setFollowChecked((v) => !v)}
                 color="#fb00a3"
-                onClick={followUpdate}
+                onClick={updateFollow}
               >
                 Follow
               </Chip>
@@ -316,9 +307,8 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
           </Button>
         </Flex>
         <h2 style={{ marginLeft: 50, color: "lightgray" }}>{description}</h2>
-        {/* created with */}
-        {userModal()}
-        {/* <UserModal opened={opened} username={selectedUsername} onClose={close} followers={followers} following={following}/> */}
+
+        {/* {userModal()} */}
         <div style={{ marginLeft: 50 }}>
           <span>
             created by :<span>&nbsp;</span>

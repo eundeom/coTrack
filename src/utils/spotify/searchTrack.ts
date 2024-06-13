@@ -23,7 +23,7 @@ const searchTracks = async (query: string, accessToken: string) => {
     albumCover: item.album.images[0].url,
     duration: new Date(item.duration_ms).toISOString().substr(14, 5),
   }));
-  //   console.log(trackList);
+  // console.log(trackList);
 
   return trackList;
 };

@@ -1,4 +1,4 @@
-import { supabase } from "@/utils/supabase/Admin";
+import { supabase } from "@/utils/supabase/admin";
 import { makeServerClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 

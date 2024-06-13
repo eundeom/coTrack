@@ -2,12 +2,12 @@
 import Link from "next/link";
 import { Image, Flex, Button, Select } from "@mantine/core";
 import "../../../../app/globals.css";
-import { makeBrowserClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../playlist.css";
 import { useUserState } from "@/app/context/user.provider";
-import fetchPlaylist from "@/utils/coTrack/fetchPlaylist";
+import { getVisionZFile } from "@visionz/upload-helper-react";
+import { useTokenState } from "@/app/context/token.provider";
 
 /**
  * playlist slide ..
@@ -44,40 +44,76 @@ type playlistsData = {
 
 const PlaylistComponent = () => {
   const router = useRouter();
-  const supabase = makeBrowserClient();
   const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
   const [allPlaylists, setAllplaylists] = useState<playlistData[] | null>([]);
   const { userId, setUser, setUserId } = useUserState();
   const [username, setUsername] = useState<string | undefined>("");
+  const { getAccessToken } = useTokenState();
 
   useEffect(() => {
     // if (!username) {
     //   router.push("/auth/login");
     // }
+
+    // // get Access Token //
+    // const getToken = async () => {
+    //   const token = await getAccessToken();
+    // };
+    // getToken();
+
     const getUserInfo = async () => {
-      const { data: userData, error } = await supabase
-        .from("users")
-        .select()
-        .eq("id", userId as string)
-        .single();
+      const getUserInfoResponse = await fetch("/api/user/getUserInfo", {
+        method: "POST",
+        body: JSON.stringify({ userId }),
+      });
+      const getUserInfoResult = await getUserInfoResponse.json();
+      const userData = getUserInfoResult.data;
+      console.log(userData);
 
       setUsername(userData?.username);
     };
-    getUserInfo();
 
     const getPlaylist = async () => {
-      const fetchedPlaylist = await fetchPlaylist(userId as string);
-      setPlaylists(fetchedPlaylist);
+      const getPlaylistResponse = await fetch("/api/playlist/getPlaylist", {
+        method: "POST",
+        body: JSON.stringify({ payload: userId }),
+      });
+
+      const getPlaylistResult = await getPlaylistResponse.json();
+      const getPlaylistData = getPlaylistResult.data;
+
+      if (getPlaylistData && getPlaylistData.length > 0) {
+        const playlistsData: Promise<playlistsData>[] = getPlaylistData.map(
+          async (playlist: {
+            playlists: { playlist_name: string; playlistcover: string | null };
+            playlist_id: string;
+          }) => ({
+            name: playlist.playlists.playlist_name,
+            cover: await convertToSrc(playlist.playlists.playlistcover),
+            id: playlist.playlist_id,
+          }),
+        );
+        setPlaylists(await Promise.all(playlistsData));
+      }
     };
-    getPlaylist();
+
+    if (userId) {
+      getPlaylist();
+      getUserInfo();
+    }
 
     // get all playlist for autocomplete
     const getAllPlaylist = async () => {
-      const { data: playlistData, error: Perror } = await supabase.from("playlists").select("*");
-      setAllplaylists(playlistData);
+      const getAllPlaylistResponse = await fetch("/api/playlist/getAllPlaylist", {
+        method: "POST",
+      });
+
+      const getAllPlaylistResult = await getAllPlaylistResponse.json();
+
+      setAllplaylists(getAllPlaylistResult.data);
     };
     getAllPlaylist();
-  }, [router, supabase, userId]);
+  }, [getAccessToken, router, userId]);
 
   // autocomplete array
   const playlistNames = Array.from(
@@ -89,16 +125,37 @@ const PlaylistComponent = () => {
     ),
   );
 
-  const logOutHandler = async () => {
-    const { error } = await supabase.auth.signOut();
-    const { error: Derror } = await supabase
-      .from("token")
-      .delete()
-      .eq("user_id", userId as string);
+  const convertToSrc = async (playlistCover: string | null) => {
+    if (!playlistCover) return null;
 
-    setUser(false);
-    setUserId(null);
-    router.replace("/auth/login");
+    try {
+      const imageSrc = await getVisionZFile(`${window.location.origin}/api/upload`, playlistCover);
+      return imageSrc;
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      return null;
+    }
+  };
+
+  const logOutHandler = async () => {
+    // const { error } = await supabase.auth.signOut();
+
+    const logOutResponse = await fetch("/api/user/signOut", {
+      method: "POST",
+      body: JSON.stringify({
+        payload: { userId },
+      }),
+    });
+    const logOutResult = await logOutResponse.json();
+
+    if (logOutResponse.ok) {
+      console.log("Logged out.");
+      window.location.href = logOutResult.redirect;
+    } else {
+      console.error("Error logging out:", logOutResult.error);
+    }
+
+    // router.replace("/auth/login");
   };
 
   // click cover image -> move to playlist

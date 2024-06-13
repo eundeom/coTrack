@@ -26,6 +26,7 @@ export const UserProvider = ({ children }: { children: any }) => {
   useEffect(() => {
     const checkCredential = async () => {
       const authSupabase = makeBrowserClient();
+
       const {
         data: { user },
       } = await authSupabase.auth.getUser();
@@ -33,6 +34,8 @@ export const UserProvider = ({ children }: { children: any }) => {
       if (user) {
         setUser(true);
         setUserId(user.id);
+      } else {
+        console.log("no user");
       }
     };
     checkCredential();

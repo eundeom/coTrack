@@ -18,36 +18,30 @@ const LoginPage = () => {
     const password = passwordRef.current!.value.trim();
     if (!email || !password) return;
 
-    try {
-      const authSupabase = makeBrowserClient();
+    const authSupabase = makeBrowserClient();
 
-      const { data, error } = await authSupabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    const { data, error } = await authSupabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      if (data.user) {
-        setUser(true);
-        setUserId(data.user.id);
-        console.log(userId);
+    if (data.user) {
+      setUser(true);
+      setUserId(data.user.id);
 
-        const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
-        // const redirect_uri = "http://localhost:3000/api/spotify";
-        const redirect_uri = "https://co-track.vercel.app/api/spotify";
-        const SCOPE = "user-read-private user-read-email";
+      const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
+      const redirect_uri = `${window.location.origin}/api/spotify`;
+      const SCOPE = "user-read-private user-read-email";
 
-        const params = new URLSearchParams();
-        params.set("response_type", "code");
-        params.set("client_id", client_id);
-        params.set("scope", SCOPE);
-        params.set("redirect_uri", redirect_uri);
+      const params = new URLSearchParams();
+      params.set("response_type", "code");
+      params.set("client_id", client_id);
+      params.set("scope", SCOPE);
+      params.set("redirect_uri", redirect_uri);
 
-        location.replace("https://accounts.spotify.com/authorize?" + params.toString());
-      } else {
-        alert("log in failed");
-      }
-    } catch (error) {
-      console.error(error);
+      location.replace("https://accounts.spotify.com/authorize?" + params.toString());
+    } else {
+      alert("log in failed");
     }
   };
 
@@ -61,10 +55,7 @@ const LoginPage = () => {
           flexDirection: "column",
         }}
       >
-        {/* <Text size="xl">Log in</Text> */}
         <h1 className="auth-main-title">
-          {/* ✳︎
-          <br /> */}
           Log in to{" "}
           <span>
             c<span style={{ fontSize: 40, color: "#fb00a3" }}>✳︎</span>
@@ -72,16 +63,8 @@ const LoginPage = () => {
           Track
         </h1>
         <form onSubmit={LoginHandler}>
-          <TextInput
-            // label="Email"
-            placeholder="E-mail"
-            radius="xl"
-            size="md"
-            w={300}
-            ref={emailRef}
-          />
+          <TextInput placeholder="E-mail" radius="xl" size="md" w={300} ref={emailRef} />
           <PasswordInput
-            // label="Password"
             placeholder="Password"
             radius="xl"
             size="md"
@@ -98,12 +81,9 @@ const LoginPage = () => {
             radius="xl"
             size="md"
             color="rgba(122, 122, 122, 1)"
-            // color="#fb00a3"
           >
             log in
           </Button>
-
-          {/* redirect to sign up page */}
         </form>
 
         <Link href="/auth/signup" className="auth-subtitle">

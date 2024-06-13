@@ -1,6 +1,6 @@
-import { supabase } from "@/utils/supabase/Admin";
+import "server-only";
+import { supabase } from "@/utils/supabase/admin";
 import { makeServerClient } from "@/utils/supabase/server";
-import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 interface TokenData {
   access_token: string;
@@ -13,11 +13,9 @@ interface TokenData {
 export async function GET(req: NextRequest) {
   const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
   const client_secret = process.env.SPOTIFY_CLIENT_SECRET!;
-  // const redirect_uri = "http://localhost:3000/api/spotify";
-  const redirect_uri = "https://co-track.vercel.app/api/spotify";
+  const redirect_uri = `${req.nextUrl.origin}/api/spotify`;
 
   const code = req.nextUrl.searchParams.get("code")!;
-  console.log("spotify code:", code);
 
   const params = new URLSearchParams();
   params.set("code", code);

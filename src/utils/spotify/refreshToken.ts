@@ -1,11 +1,12 @@
-import { makeServerClient } from "../supabase/server";
+// import { makeServerClient } from "../supabase/server";
+import { supabase } from "../supabase/admin";
 
 // get Refresh Token //
 const getRefreshToken = async (userId: string) => {
   const client_id = process.env.SPOTIFY_CLIENT_ID!;
   const client_secret = process.env.SPOTIFY_CLIENT_SECRET!;
 
-  const supabase = makeServerClient();
+  // const supabase = makeServerClient();
 
   const refreshHandler = async (userId: string) => {
     const { data: TokenData, error } = await supabase.from("token").select();
@@ -57,7 +58,7 @@ const getRefreshToken = async (userId: string) => {
     .select("expire_at")
     .eq("user_id", userId);
 
-  const expireAt = new Date(TokenExpireAt![0].expire_at!); // DB에 2개 insert 돼서 !!!!
+  const expireAt = new Date(TokenExpireAt![0].expire_at!);
   const currentTime = new Date();
 
   if (currentTime >= expireAt) {
