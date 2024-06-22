@@ -1,8 +1,9 @@
-import PlaylistPage from "./playlist/main/page";
+import LoginPage from "./auth/login/page";
+
 export default function Root() {
   return (
     <>
-      <PlaylistPage />
+      <LoginPage />
     </>
   );
 }

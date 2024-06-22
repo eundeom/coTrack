@@ -14,13 +14,14 @@ export async function POST(req: NextRequest) {
     .select("*")
     .eq("playlist_id", playlistId);
 
-  if (existingPlaylistError)
+  if (existingPlaylistError) {
     return NextResponse.json({ error: existingPlaylistError.message }, { status: 500 });
+  }
 
-  if (existingPlaylist) {
+  if (existingPlaylist && existingPlaylist.length > 0) {
     insertQuery = { user_id: userId, playlist_id: playlistId };
   } else {
-    // if the creator make playlist -> should be TRUE
+    // if the creator makes playlist -> should be TRUE
     insertQuery = { user_id: userId, playlist_id: playlistId, creator: "TRUE" };
   }
 
