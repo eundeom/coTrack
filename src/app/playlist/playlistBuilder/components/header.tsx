@@ -5,9 +5,7 @@ interface HeaderComponentProps {
   createPlaylistHandler: () => void;
 }
 
-const HeaderComponent: React.FC<HeaderComponentProps> = ({
-  createPlaylistHandler,
-}) => {
+const HeaderComponent: React.FC<HeaderComponentProps> = ({ createPlaylistHandler }) => {
   const router = useRouter();
 
   return (

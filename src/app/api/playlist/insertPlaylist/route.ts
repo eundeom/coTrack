@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
     .from("playlists")
     .insert(payload.playlistInfo)
     .select(payload.select);
+
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ data });
 }

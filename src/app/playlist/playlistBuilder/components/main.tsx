@@ -74,7 +74,7 @@ const PlaylistBuilderComponent = () => {
       },
       select: "id",
     };
-    const playlistResponse = await fetch("/api/playlist/insert", {
+    const playlistResponse = await fetch("/api/playlist/insertPlaylist", {
       method: "POST",
       body: JSON.stringify({
         payload: insertPlaylistPlayload,
@@ -85,15 +85,9 @@ const PlaylistBuilderComponent = () => {
     const playlistId = playlistResult.data[0].id;
 
     // INSERT playlist_users
-    const insertUserPlayload = {
-      userInfo: { user_id: userId as string, playlist_id: playlistId },
-    };
-
-    const userResponse = await fetch("/api/user/insert", {
+    const userResponse = await fetch("/api/user/insertPlaylistUser", {
       method: "POST",
-      body: JSON.stringify({
-        payload: insertUserPlayload,
-      }),
+      body: JSON.stringify({ userId, playlistId }),
     });
 
     const userResult = await userResponse.json();
@@ -112,7 +106,7 @@ const PlaylistBuilderComponent = () => {
 
     const insertSongsPlayload = { songsToInsert };
 
-    const songsResponse = await fetch("/api/song/insert", {
+    const songsResponse = await fetch("/api/song/insertPlaylistSongs", {
       method: "POST",
       body: JSON.stringify({
         payload: insertSongsPlayload,

@@ -10,9 +10,9 @@ import {
   ActionIcon,
   Tooltip,
   rem,
-  Center,
+  Pill,
 } from "@mantine/core";
-import { IconCopy, IconCheck, IconPhoto } from "@tabler/icons-react";
+import { IconCopy, IconCheck } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import getTrack from "@/utils/spotify/getTrack";
@@ -60,6 +60,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const [followChecked, setFollowChecked] = useState(false); // chip
   const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
   const [inviteCode, setInviteCode] = useState<string>("");
+  const [creator, setCreator] = useState<boolean>(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -125,6 +126,19 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       }
     };
     getCreatedWith();
+
+    const checkCreator = async () => {
+      const checkCreatorResponse = await fetch("/api/playlist/checkCreator", {
+        method: "POST",
+        body: JSON.stringify({ userId, playlistsId }),
+      });
+      const checkCreatorResult = await checkCreatorResponse.json();
+
+      if (checkCreatorResult.data[0].creator === true) {
+        setCreator(true);
+      }
+    };
+    checkCreator();
   }, [getAccessToken, playlistsId, userId, inviteCode]);
 
   /////////////////////////////////////////////
@@ -351,7 +365,8 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
           <Button variant="transparent" color="black" size="lg">
             <span
               onClick={() => {
-                router.push("/playlist/main");
+                // previous page
+                window.history.back();
               }}
             >
               <svg
@@ -400,22 +415,20 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
                   open();
                 }}
               >
-                <p>
-                  {" "}
-                  {created.username}
-                  <span>&nbsp;</span>
-                </p>
+                <Pill>{created.username}</Pill>
+                <span>&nbsp;</span>
               </div>
             ))}
           </span>
         </div>
-        {inviteCode ? (
+        {inviteCode && creator ? (
           <div style={{ marginLeft: 50 }}>
             <span style={{ display: "Flex", alignItems: "Center" }}>
               <span>
-                invite code
-                {/* {inviteCode} */}
+                invite code :<span>&nbsp;</span>
+                <Pill>{inviteCode}</Pill>
               </span>
+
               <CopyButton value={inviteCode} timeout={2000}>
                 {({ copied, copy }) => (
                   <Tooltip label={copied ? "Copied" : "Copy"} withArrow position="right">
