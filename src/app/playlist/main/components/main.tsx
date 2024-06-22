@@ -46,7 +46,7 @@ const PlaylistComponent = () => {
   const router = useRouter();
   const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
   const [allPlaylists, setAllplaylists] = useState<playlistData[] | null>([]);
-  const { userId, setUser, setUserId } = useUserState();
+  const { userId } = useUserState();
   const [username, setUsername] = useState<string | undefined>("");
   const { getAccessToken } = useTokenState();
 
@@ -131,24 +131,18 @@ const PlaylistComponent = () => {
   };
 
   const logOutHandler = async () => {
-    // const { error } = await supabase.auth.signOut();
-
     const logOutResponse = await fetch("/api/user/signOut", {
       method: "POST",
-      body: JSON.stringify({
-        payload: { userId },
-      }),
+      body: JSON.stringify({ userId }),
     });
     const logOutResult = await logOutResponse.json();
 
     if (logOutResponse.ok) {
       console.log("Logged out.");
-      window.location.href = logOutResult.redirect;
+      router.replace("/auth/login");
     } else {
       console.error("Error logging out:", logOutResult.error);
     }
-
-    // router.replace("/auth/login");
   };
 
   // click cover image -> move to playlist

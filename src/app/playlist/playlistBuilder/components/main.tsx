@@ -44,6 +44,20 @@ const PlaylistBuilderComponent = () => {
     const playlist_name = titleRef.current!.value.trim();
     const description = descriptionRef.current!.value.trim();
 
+    const generateInviteCode = () => {
+      const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      const length = Math.floor(Math.random() * 3) + 6; // 6, 7, or 8
+      let inviteCode = "";
+
+      for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        inviteCode += characters[randomIndex];
+      }
+
+      return inviteCode;
+    };
+    const inviteCode = generateInviteCode();
+
     // invite code expiration time
     const currentTime = new Date();
     const after30 = new Date(currentTime.getTime() + 30 * 60000);
@@ -55,6 +69,7 @@ const PlaylistBuilderComponent = () => {
         playlist_name,
         playlistcover: uploadSrc,
         description,
+        invite_code: inviteCode,
         code_expiration_time: after30,
       },
       select: "id",

@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from("playlists")
-    .select("playlist_name, description, playlistcover")
+    .select("*")
     .eq("id", playlistsId)
     .single();
 

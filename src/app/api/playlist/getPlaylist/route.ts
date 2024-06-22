@@ -9,7 +9,7 @@ type playlistsData = {
 
 export async function POST(req: NextRequest) {
   const { payload } = await req.json();
-  console.log(payload);
+
   const { data, error } = await supabase
     .from("playlist_users")
     .select(

@@ -1,6 +1,7 @@
 "use client";
 import { useUserState } from "@/app/context/user.provider";
-import { makeBrowserClient } from "@/utils/supabase/client";
+// import { makeBrowserClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/admin";
 import { Button, Flex, Container } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -10,47 +11,50 @@ import { useRouter } from "next/navigation";
 const MyPage = () => {
   const { userId } = useUserState();
   const router = useRouter();
-  const supabase = makeBrowserClient();
+  // const supabase = makeBrowserClient();
+
   const [username, setUsername] = useState<string>();
   const [followers, setFollowers] = useState<number>();
   const [following, setFollowing] = useState<number>();
 
   useEffect(() => {
     const getUserInfo = async () => {
-      const { data: userData, error } = await supabase
-        .from("users")
-        .select("username")
-        .eq("id", userId as string);
+      const getUserInfoResponse = await fetch("/api/user/getUserInfo", {
+        method: "POST",
+        body: JSON.stringify({ userId }),
+      });
+      const getUserInfoResult = await getUserInfoResponse.json();
+      const userData = getUserInfoResult.data;
 
-      if (error) {
-        console.error(error);
-        return;
-      }
-      setUsername(userData[0].username);
+      setUsername(userData?.username);
     };
-    getUserInfo();
 
-    // follow에 내 userid 있으면 팔로워 수  :  나를 팔로우 하는 사람
-    const getFollowers = async () => {
-      const { data: followersData, error } = await supabase
-        .from("followers")
-        .select("*")
-        .eq("follow", userId as string);
+    const getFollower = async () => {
+      const getFollowerResponse = await fetch("/api/follow/getFollower", {
+        method: "POST",
+        body: JSON.stringify({ userId }),
+      });
+      const getFollowerResult = await getFollowerResponse.json();
 
-      setFollowers(followersData?.length);
+      setFollowers(getFollowerResult.data?.length);
     };
-    getFollowers();
 
-    // userid 총 개수 = 팔로우하는 수
     const getFollowing = async () => {
-      const { data: followingsData, error } = await supabase
-        .from("followers")
-        .select("*")
-        .eq("user_id", userId as string);
+      const getFollowingResponse = await fetch("/api/follow/getFollowing", {
+        method: "POST",
+        body: JSON.stringify({ userId }),
+      });
+      const getFollowingResult = await getFollowingResponse.json();
 
-      setFollowing(followingsData?.length);
+      setFollowing(getFollowingResult.data?.length);
     };
-    getFollowing();
+
+    if (userId) {
+      getUserInfo();
+
+      getFollower();
+      getFollowing();
+    }
   });
 
   return (

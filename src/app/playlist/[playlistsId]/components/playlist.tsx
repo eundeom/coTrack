@@ -1,5 +1,18 @@
 "use client";
-import { Flex, Button, Container, Modal, Chip, Image } from "@mantine/core";
+import {
+  Flex,
+  Button,
+  Container,
+  Modal,
+  Chip,
+  Image,
+  CopyButton,
+  ActionIcon,
+  Tooltip,
+  rem,
+  Center,
+} from "@mantine/core";
+import { IconCopy, IconCheck, IconPhoto } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import getTrack from "@/utils/spotify/getTrack";
@@ -46,6 +59,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const [following, setFollowing] = useState<number>();
   const [followChecked, setFollowChecked] = useState(false); // chip
   const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
+  const [inviteCode, setInviteCode] = useState<string>("");
 
   useEffect(() => {
     if (!userId) return;
@@ -81,6 +95,9 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
 
       setPlaylistName(getPlaylistInfoResult.data.playlist_name);
       setDescription(getPlaylistInfoResult.data.description);
+      if (getPlaylistInfoResult.data.created_by === userId) {
+        setInviteCode(getPlaylistInfoResult.data.invite_code);
+      }
     };
     getPlaylistInfo();
 
@@ -108,7 +125,9 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       }
     };
     getCreatedWith();
-  }, [getAccessToken, playlistsId, userId]);
+  }, [getAccessToken, playlistsId, userId, inviteCode]);
+
+  /////////////////////////////////////////////
 
   // user modal section
   const getFollower = async (userId: string) => {
@@ -294,6 +313,37 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
     );
   };
 
+  /////////////////////////////////////////////
+  const refreshInviteCode = async () => {
+    // DB에 Update
+
+    const updateInviteCodeResponse = await fetch("/api/playlist/updateInviteCode", {
+      method: "POST",
+      body: JSON.stringify({ playlistsId }),
+    });
+
+    await updateInviteCodeResponse.json();
+    setInviteCode("");
+  };
+
+  const icon = (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M19.933 13.041a8 8 0 1 1 -9.925 -8.788c3.899 -1 7.935 1.007 9.425 4.747" />
+      <path d="M20 4v5h-5" />
+    </svg>
+  );
+
   return (
     <>
       <Container mt={30} size="lg">
@@ -359,6 +409,39 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
             ))}
           </span>
         </div>
+        {inviteCode ? (
+          <div style={{ marginLeft: 50 }}>
+            <span style={{ display: "Flex", alignItems: "Center" }}>
+              <span>
+                invite code
+                {/* {inviteCode} */}
+              </span>
+              <CopyButton value={inviteCode} timeout={2000}>
+                {({ copied, copy }) => (
+                  <Tooltip label={copied ? "Copied" : "Copy"} withArrow position="right">
+                    <ActionIcon color={copied ? "teal" : "gray"} variant="subtle" onClick={copy}>
+                      {copied ? (
+                        <IconCheck style={{ width: rem(16) }} />
+                      ) : (
+                        <IconCopy style={{ width: rem(16) }} />
+                      )}
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+              </CopyButton>
+
+              {/* refresh invite code */}
+              <Button
+                justify="center"
+                leftSection={icon}
+                variant="transparent"
+                color="gray"
+                w={14}
+                onClick={refreshInviteCode}
+              ></Button>
+            </span>
+          </div>
+        ) : null}
 
         <PlaylistItemsComponent tracks={tracks} />
       </Container>
