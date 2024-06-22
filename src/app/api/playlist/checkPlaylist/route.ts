@@ -10,14 +10,26 @@ export async function POST(req: NextRequest) {
     .select("*")
     .eq("invite_code", inviteCode);
 
-  if (data) {
+  if (data && data.length > 0) {
     // check expiration time
     const currentTime = new Date();
-    const expiration = new Date(data[0].code_expiration_time);
+    // console.log("data[0]", data[0]);
+
+    const playlist = data[0] as {
+      id: string;
+      created_by: string;
+      playlist_name: string;
+      created_at: string;
+      playlistcover: string | null;
+      description: string | null;
+      invite_code: string;
+      code_expiration_time: string;
+    };
+
+    const expiration = new Date(playlist.code_expiration_time);
     // const expirationTime = expiration.toISOString();
 
     // 만약 유저 아이디가 플레이리스트 아이디에 이미 들어가 있으면 중복취소
-
     if (currentTime > expiration) {
       // expired
       return NextResponse.json({ error: "This code has expired!" }, { status: 400 });

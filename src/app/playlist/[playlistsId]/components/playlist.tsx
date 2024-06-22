@@ -133,8 +133,10 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       });
       const checkCreatorResult = await checkCreatorResponse.json();
 
-      if (checkCreatorResult.data[0].creator === true) {
-        setCreator(true);
+      if (checkCreatorResult.data[0]) {
+        if (checkCreatorResult.data[0].creator === true) {
+          setCreator(true);
+        }
       }
     };
     checkCreator();
