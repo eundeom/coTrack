@@ -237,7 +237,11 @@ const EditPlaylist = ({ params: { playlistsId } }: { params: { playlistsId: stri
     <>
       <Container mt={30} size="lg">
         {/* 수정 DONE 버튼 */}
-        <HeaderComponent doneToEditPlaylist={doneToEditPlaylist} deletePlaylist={deletePlaylist} />
+        <HeaderComponent
+          doneToEditPlaylist={doneToEditPlaylist}
+          deletePlaylist={deletePlaylist}
+          creator={creator}
+        />
         <Flex>
           {/* 파일 업로드 버튼 */}
           <UploadFileComponent onFileChange={onFileChange} selectedFile={selectedFile} />

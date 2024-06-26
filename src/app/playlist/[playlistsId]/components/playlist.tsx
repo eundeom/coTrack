@@ -61,6 +61,7 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
   const [playlists, setPlaylists] = useState<playlistsData[] | undefined>([]);
   const [inviteCode, setInviteCode] = useState<string>("");
   const [creator, setCreator] = useState<boolean>(false);
+  const [member, setMember] = useState<boolean>(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -141,6 +142,20 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
       }
     };
     checkCreator();
+
+    const checkPlaylistMember = async () => {
+      const checkPlaylistMemberResponse = await fetch("/api/user/checkPlaylistMember", {
+        method: "POST",
+        body: JSON.stringify({ userId, playlistsId }),
+      });
+      const checkPlaylistMemberResult = await checkPlaylistMemberResponse.json();
+      console.log(checkPlaylistMemberResult.data);
+
+      if (checkPlaylistMemberResult.data.length > 0) {
+        setMember(true);
+      }
+    };
+    checkPlaylistMember();
   }, [getAccessToken, playlistsId, userId, inviteCode]);
 
   /////////////////////////////////////////////
@@ -388,17 +403,21 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
             </span>
           </Button>
           <h1 style={{ fontSize: 40 }}>{playlistName}</h1>
-          <Button
-            variant="filled"
-            color="#FB00A3"
-            size="md"
-            radius="xl"
-            onClick={() => {
-              router.push(`/playlist/${playlistsId}/edit`);
-            }}
-          >
-            Edit
-          </Button>
+          {member ? (
+            <Button
+              variant="filled"
+              color="#FB00A3"
+              size="md"
+              radius="xl"
+              onClick={() => {
+                router.push(`/playlist/${playlistsId}/edit`);
+              }}
+            >
+              Edit
+            </Button>
+          ) : (
+            <div></div>
+          )}
         </Flex>
         <h2 style={{ marginLeft: 50, color: "lightgray" }}>{description}</h2>
 

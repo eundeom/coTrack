@@ -4,11 +4,13 @@ import { useRouter } from "next/navigation";
 interface HeaderComponentProps {
   doneToEditPlaylist: () => void;
   deletePlaylist: () => void;
+  creator: string | null;
 }
 
 const HeaderComponent: React.FC<HeaderComponentProps> = ({
   doneToEditPlaylist,
   deletePlaylist,
+  creator,
 }) => {
   const router = useRouter();
 
@@ -38,9 +40,20 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
       </Button>
       <h1 className="playlist-mini-title">Edit your own Playlist</h1>
       <div>
-        <Button variant="filled" color="#FB00A3" size="md" radius="xl" onClick={deletePlaylist}>
-          Delete
-        </Button>
+        {creator ? (
+          <Button
+            variant="filled"
+            color="gray"
+            size="md"
+            mr={10}
+            radius="xl"
+            onClick={deletePlaylist}
+          >
+            Delete
+          </Button>
+        ) : (
+          <></>
+        )}
         <Button variant="filled" color="#FB00A3" size="md" radius="xl" onClick={doneToEditPlaylist}>
           Done
         </Button>
