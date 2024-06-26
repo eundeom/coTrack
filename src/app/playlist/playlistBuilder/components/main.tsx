@@ -46,14 +46,13 @@ const PlaylistBuilderComponent = () => {
 
     const generateInviteCode = () => {
       const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      const length = Math.floor(Math.random() * 3) + 6; // 6, 7, or 8
+      const length = Math.floor(Math.random() * 3) + 6; // 6-8
       let inviteCode = "";
 
       for (let i = 0; i < length; i++) {
         const randomIndex = Math.floor(Math.random() * characters.length);
         inviteCode += characters[randomIndex];
       }
-
       return inviteCode;
     };
     const inviteCode = generateInviteCode();

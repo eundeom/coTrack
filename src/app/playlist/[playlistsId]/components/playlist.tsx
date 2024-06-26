@@ -11,6 +11,7 @@ import {
   Tooltip,
   rem,
   Pill,
+  Badge,
 } from "@mantine/core";
 import { IconCopy, IconCheck } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -392,9 +393,9 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
             color="#FB00A3"
             size="md"
             radius="xl"
-            // onClick={() => {
-            //   router.push("/");
-            // }}
+            onClick={() => {
+              router.push(`/playlist/${playlistsId}/edit`);
+            }}
           >
             Edit
           </Button>

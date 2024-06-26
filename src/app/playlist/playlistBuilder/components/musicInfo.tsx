@@ -1,5 +1,6 @@
+"use client";
 import { Button, TextInput, Flex } from "@mantine/core";
-import { RefObject } from "react";
+import { RefObject, useEffect, useState } from "react";
 
 interface PlaylistInfoComponentProps {
   titleRef: RefObject<HTMLInputElement>;
@@ -16,7 +17,7 @@ const PlaylistInfoComponent: React.FC<PlaylistInfoComponentProps> = ({
 }) => {
   return (
     <>
-      <Flex direction="column" mt={50}>
+      <Flex direction="column">
         <div
           style={{
             display: "flex",
@@ -28,7 +29,17 @@ const PlaylistInfoComponent: React.FC<PlaylistInfoComponentProps> = ({
           <span style={{ width: 200, fontSize: 18 }}>
             <b>Playlist title</b>
           </span>
-          <TextInput variant="filled" radius="lg" style={{ width: "100%" }} ref={titleRef} />
+          <TextInput
+            variant="filled"
+            radius="lg"
+            style={{ width: "100%" }}
+            ref={titleRef}
+            onChange={(e) => {
+              if (titleRef.current) {
+                titleRef.current.value = e.target.value;
+              }
+            }}
+          />
         </div>
 
         {/* Description */}
@@ -43,7 +54,17 @@ const PlaylistInfoComponent: React.FC<PlaylistInfoComponentProps> = ({
           <span style={{ width: 200, fontSize: 18 }}>
             <b>Description</b>
           </span>
-          <TextInput variant="filled" radius="lg" style={{ width: "100%" }} ref={descriptionRef} />
+          <TextInput
+            variant="filled"
+            radius="lg"
+            style={{ width: "100%" }}
+            ref={descriptionRef}
+            onChange={(e) => {
+              if (descriptionRef.current) {
+                descriptionRef.current.value = e.target.value;
+              }
+            }}
+          />
         </div>
 
         {/* Create with */}

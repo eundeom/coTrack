@@ -1,4 +1,4 @@
-import { Flex, Image, Text, CloseButton, Grid } from "@mantine/core";
+import { Image, CloseButton, Grid } from "@mantine/core";
 
 interface Track {
   id: string;

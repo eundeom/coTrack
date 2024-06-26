@@ -109,18 +109,21 @@ export type Database = {
       playlist_users: {
         Row: {
           created_at: string
+          creator: boolean
           id: string
           playlist_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          creator?: boolean
           id?: string
           playlist_id: string
           user_id: string
         }
         Update: {
           created_at?: string
+          creator?: boolean
           id?: string
           playlist_id?: string
           user_id?: string
