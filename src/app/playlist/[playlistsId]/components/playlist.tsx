@@ -149,7 +149,6 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
         body: JSON.stringify({ userId, playlistsId }),
       });
       const checkPlaylistMemberResult = await checkPlaylistMemberResponse.json();
-      console.log(checkPlaylistMemberResult.data);
 
       if (checkPlaylistMemberResult.data.length > 0) {
         setMember(true);

@@ -17,7 +17,7 @@ const PlaylistInfoComponent: React.FC<PlaylistInfoComponentProps> = ({
 }) => {
   return (
     <>
-      <Flex direction="column">
+      <Flex direction="column" mt={50}>
         <div
           style={{
             display: "flex",

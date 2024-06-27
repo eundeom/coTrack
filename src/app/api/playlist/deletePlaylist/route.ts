@@ -10,11 +10,15 @@ export async function POST(req: NextRequest) {
     .delete()
     .eq("playlist_id", playlistsId);
 
+  if (deleteSongsError) throw deleteSongsError;
+
   // users
   const { data: deleteUsersData, error: deleteUsersError } = await supabase
     .from("playlist_users")
     .delete()
     .eq("playlist_id", playlistsId);
+
+  if (deleteUsersError) throw deleteUsersError;
 
   // playlist
   const { data: deletePlaylistData, error: deletePlaylistError } = await supabase

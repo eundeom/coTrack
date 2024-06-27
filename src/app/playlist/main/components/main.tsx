@@ -34,6 +34,9 @@ type playlistData = {
   id: string;
   playlist_name: string;
   playlistcover: string | null;
+  users: {
+    username: string;
+  };
 };
 
 type playlistsData = {
@@ -113,7 +116,7 @@ const PlaylistComponent = () => {
     new Set(
       allPlaylists!.map((playlist) => ({
         value: playlist.id,
-        label: playlist.playlist_name,
+        label: playlist.playlist_name + " - " + playlist.users.username,
       })),
     ),
   );
@@ -213,7 +216,7 @@ const PlaylistComponent = () => {
                 size="md"
                 mt={20}
                 w={300}
-                limit={10}
+                limit={5}
                 maxDropdownHeight={120}
                 nothingFoundMessage="Nothing found..."
                 searchable

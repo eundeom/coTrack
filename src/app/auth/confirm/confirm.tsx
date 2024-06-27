@@ -25,8 +25,6 @@ const AuthConfirmComponent = ({ searchParams }: { searchParams: { confirmUrl: st
       console.error("username DB 추가 에러:", insertError.message);
       return;
     }
-
-    console.log(insertData);
   };
   return (
     <>

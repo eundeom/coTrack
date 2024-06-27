@@ -246,12 +246,7 @@ const EditPlaylist = ({ params: { playlistsId } }: { params: { playlistsId: stri
           {/* 파일 업로드 버튼 */}
           <UploadFileComponent onFileChange={onFileChange} selectedFile={selectedFile} />
 
-          <Flex direction="column" mt={50}>
-            {/* 지금 채팅방 참여 유저 삭제 관리 */}
-            {creator !== "" ? (
-              <PlaylistUsersComponent users={users} creator={creator} removeUsers={removeUsers} />
-            ) : null}
-
+          <Flex direction="column">
             {/* 플레이리스트 정보 수정 input - 이 전 정보 불러오기 */}
             <PlaylistInfoComponent
               titleRef={titleRef}
@@ -259,6 +254,10 @@ const EditPlaylist = ({ params: { playlistsId } }: { params: { playlistsId: stri
               searchRef={searchRef}
               searchTrackHandler={searchTrackHandler}
             />
+            {/* 지금 채팅방 참여 유저 삭제 관리 */}
+            {creator !== "" ? (
+              <PlaylistUsersComponent users={users} creator={creator} removeUsers={removeUsers} />
+            ) : null}
           </Flex>
         </Flex>
         {/* 음악 검색 -> 그대로 사용 */}
