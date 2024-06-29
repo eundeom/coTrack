@@ -3,7 +3,7 @@ import { Container, Flex } from "@mantine/core";
 import HeaderComponent from "./components/header";
 import PlaylistInfoComponent from "../../playlistBuilder/components/musicInfo";
 import SearchItemsComponent from "../../playlistBuilder/components/searchTracks";
-import UploadFileComponent from "../../playlistBuilder/components/uploadFile";
+import UploadFileComponent from "./components/uploadFile";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getVisionZFile, useVisionZUpload } from "@visionz/upload-helper-react";
@@ -36,6 +36,7 @@ const EditPlaylist = ({ params: { playlistsId } }: { params: { playlistsId: stri
   const router = useRouter();
   const titleRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
+  const coverRef = useRef<string>("");
   const searchRef = useRef<HTMLInputElement>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [playlist, setPlaylist] = useState<Track[]>([]);
@@ -58,6 +59,7 @@ const EditPlaylist = ({ params: { playlistsId } }: { params: { playlistsId: stri
       if (titleRef.current && descriptionRef.current) {
         titleRef.current.value = prePlaylistInfoResult.data[0].playlist_name;
         descriptionRef.current.value = prePlaylistInfoResult.data[0].description;
+        coverRef.current = prePlaylistInfoResult.data[0].playlistcover;
       }
     };
 
@@ -115,6 +117,18 @@ const EditPlaylist = ({ params: { playlistsId } }: { params: { playlistsId: stri
       getPrePlaylistInfo();
     }
   }, [getAccessToken, playlistsId, userId]);
+
+  const convertToSrc = async (playlistCover: string | null) => {
+    if (!playlistCover) return null;
+
+    try {
+      const imageSrc = await getVisionZFile(`${window.location.origin}/api/upload`, playlistCover);
+      return imageSrc;
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      return null;
+    }
+  };
 
   const doneToEditPlaylist = async () => {
     // 수정 버튼 누르면 DB update
@@ -231,6 +245,9 @@ const EditPlaylist = ({ params: { playlistsId } }: { params: { playlistsId: stri
     });
 
     const deletePlaylistResult = deletePlaylistResponse.json();
+    if (deletePlaylistResponse.ok) {
+      router.push("/playlist/main");
+    }
   };
 
   return (
@@ -244,7 +261,11 @@ const EditPlaylist = ({ params: { playlistsId } }: { params: { playlistsId: stri
         />
         <Flex>
           {/* 파일 업로드 버튼 */}
-          <UploadFileComponent onFileChange={onFileChange} selectedFile={selectedFile} />
+          <UploadFileComponent
+            onFileChange={onFileChange}
+            selectedFile={selectedFile}
+            preCover={coverRef}
+          />
 
           <Flex direction="column">
             {/* 플레이리스트 정보 수정 input - 이 전 정보 불러오기 */}

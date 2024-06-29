@@ -31,7 +31,8 @@ const LoginPage = () => {
 
       const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
       const redirect_uri = `${window.location.origin}/api/spotify`;
-      const SCOPE = "user-read-private user-read-email";
+      // const SCOPE = "user-read-private user-read-email";
+      const SCOPE = "streaming user-read-email user-read-private";
 
       const params = new URLSearchParams();
       params.set("response_type", "code");

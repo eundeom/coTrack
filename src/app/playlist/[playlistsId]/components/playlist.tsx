@@ -11,7 +11,6 @@ import {
   Tooltip,
   rem,
   Pill,
-  Badge,
 } from "@mantine/core";
 import { IconCopy, IconCheck } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -22,6 +21,7 @@ import PlaylistItemsComponent from "./Items";
 import { useTokenState } from "@/app/context/token.provider";
 import { useUserState } from "@/app/context/user.provider";
 import { getVisionZFile } from "@visionz/upload-helper-react";
+import WebPlayback from "./WebPlayback";
 
 type Track = {
   id: string;
@@ -478,6 +478,8 @@ const PlaylistsComponent = ({ playlistsId }: { playlistsId: string }) => {
 
         <PlaylistItemsComponent tracks={tracks} />
       </Container>
+
+      <WebPlayback />
     </>
   );
 };

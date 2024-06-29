@@ -10,6 +10,8 @@ interface TokenData {
   scope: string;
 }
 
+// login
+
 export async function GET(req: NextRequest) {
   const client_id = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!;
   const client_secret = process.env.SPOTIFY_CLIENT_SECRET!;

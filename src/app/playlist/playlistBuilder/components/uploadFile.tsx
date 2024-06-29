@@ -1,4 +1,4 @@
-import { FileInput, Flex } from "@mantine/core";
+import { FileInput } from "@mantine/core";
 
 interface UploadFileComponentProps {
   onFileChange: (file: File | null) => void;

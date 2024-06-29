@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   const { data: deletePlaylistData, error: deletePlaylistError } = await supabase
     .from("playlists")
     .delete()
-    .eq("playlist_id", playlistsId);
+    .eq("id", playlistsId);
 
   if (deletePlaylistError)
     return NextResponse.json({ error: deletePlaylistError.message }, { status: 500 });
