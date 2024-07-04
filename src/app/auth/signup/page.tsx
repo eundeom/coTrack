@@ -22,8 +22,8 @@ const SignUpPage = () => {
         data: {
           originUrl: location.origin,
         },
-        emailRedirectTo: "http://localhost:3000/auth/userInfo",
-        // emailRedirectTo: "https://co-track.vercel.app/auth/userInfo",
+        // emailRedirectTo: "http://localhost:3000/auth/userInfo",
+        emailRedirectTo: "https://co-track.vercel.app/auth/userInfo",
       },
     });
     console.log(data.user, "user");

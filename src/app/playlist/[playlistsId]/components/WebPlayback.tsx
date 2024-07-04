@@ -56,7 +56,7 @@ const WebPlayback = () => {
     };
 
     connectPlayer();
-  }, []);
+  }, [getAccessToken]);
 
   return (
     <>

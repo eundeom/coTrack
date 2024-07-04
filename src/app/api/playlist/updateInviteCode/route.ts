@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/utils/supabase/admin";
-import { Database } from "@/database.types"; // Ensure this path matches your project structure
-
-type Playlists = Database["public"]["Tables"]["playlists"]["Row"];
 
 export async function POST(req: NextRequest) {
   const { playlistsId } = await req.json();

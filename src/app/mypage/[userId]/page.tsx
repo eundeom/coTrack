@@ -1,7 +1,5 @@
 "use client";
 import { useUserState } from "@/app/context/user.provider";
-// import { makeBrowserClient } from "@/utils/supabase/client";
-import { supabase } from "@/utils/supabase/admin";
 import { Button, Flex, Container } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -11,7 +9,6 @@ import { useRouter } from "next/navigation";
 const MyPage = () => {
   const { userId } = useUserState();
   const router = useRouter();
-  // const supabase = makeBrowserClient();
 
   const [username, setUsername] = useState<string>();
   const [followers, setFollowers] = useState<number>();
