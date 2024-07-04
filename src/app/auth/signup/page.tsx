@@ -34,7 +34,13 @@ const SignUpPage = () => {
     }
 
     if (data && confirm("please confirm your email")) {
-      const { error } = await supabase.from("users").insert({ username: null });
+      const insertUsersResponse = await fetch("/api/user/getUserInfo", {
+        method: "POST",
+      });
+
+      const insertUsersResult = insertUsersResponse.json();
+
+      // const { error } = await supabase.from("users").insert({ username: null });
     }
   };
   return (

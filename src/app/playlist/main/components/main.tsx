@@ -105,7 +105,7 @@ const PlaylistComponent = () => {
       });
 
       const getAllPlaylistResult = await getAllPlaylistResponse.json();
-
+      console.log(getAllPlaylistResult.data);
       setAllplaylists(getAllPlaylistResult.data);
     };
     getAllPlaylist();
