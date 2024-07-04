@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/utils/supabase/admin";
+import { Database } from "@/database.types"; // Ensure this path matches your project structure
+
+type Playlists = Database["public"]["Tables"]["playlists"]["Row"];
 
 export async function POST(req: NextRequest) {
   const { playlistsId } = await req.json();
@@ -8,7 +11,7 @@ export async function POST(req: NextRequest) {
 
   // invite code expiration time
   const currentTime = new Date();
-  const after30 = new Date(currentTime.getTime() + 30 * 60000);
+  const after30 = new Date(currentTime.getTime() + 30 * 60000).toISOString();
 
   const { data, error } = await supabase
     .from("playlists")

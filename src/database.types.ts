@@ -137,6 +137,8 @@ export type Database = {
           id: string;
           playlist_name: string;
           playlistcover: string | null;
+          invite_code: string | null;
+          code_expiration_time: string;
         };
         Insert: {
           created_at?: string;
@@ -145,6 +147,8 @@ export type Database = {
           id?: string;
           playlist_name: string;
           playlistcover?: string | null;
+          invite_code?: string | null;
+          code_expiration_time?: string;
         };
         Update: {
           created_at?: string;
@@ -153,6 +157,8 @@ export type Database = {
           id?: string;
           playlist_name?: string;
           playlistcover?: string | null;
+          invite_code?: string | null;
+          code_expiration_time?: string;
         };
         Relationships: [
           {
